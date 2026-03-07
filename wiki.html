@@ -1,16 +1,22 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Forest Fools Wiki</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
+  @font-face {
+    font-family: "Old London";
+    src: url("old_london/OldLondon.ttf") format("truetype");
+  }
+
   :root {
     --bg: #000000;
     --text: #f2f2f2;
     --muted: #bbbbbb;
     --line: #d9d9d9;
+    --ascii-rail-width: 240px;
   }
 
   * {
@@ -25,6 +31,66 @@
     color: var(--text);
     font-family: "Courier New", Courier, monospace;
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ascii-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--ascii-rail-width);
+    overflow: hidden;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.62) 18%, rgba(0, 0, 0, 0.78) 100%);
+    z-index: 3;
+  }
+
+  .ascii-rail::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.035) 0,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.18;
+  }
+
+  .ascii-rail-left {
+    left: 0;
+  }
+
+  .ascii-rail-right {
+    right: 0;
+  }
+
+  .ascii-rail-right pre {
+    text-align: right;
+  }
+
+  .ascii-rail pre {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: "Courier New", Courier, monospace;
+    font-size: 9px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    user-select: none;
+    overflow: hidden;
   }
 
   body::before {
@@ -32,6 +98,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
+    z-index: 2;
     background: repeating-linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0.03) 0,
@@ -46,6 +113,8 @@
     width: min(100%, 1120px);
     margin: 0 auto;
     padding: 40px 18px 64px;
+    position: relative;
+    z-index: 5;
   }
 
   h1,
@@ -66,6 +135,7 @@
   }
 
   h1 {
+    font-family: "Old London", serif;
     font-size: clamp(1.9rem, 5.5vw, 3rem);
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -258,6 +328,14 @@
   }
 
   @media (max-width: 680px) {
+    .ascii-rail {
+      width: 136px;
+    }
+
+    .ascii-rail pre {
+      font-size: 8px;
+    }
+
     .table-head,
     .table-row {
       grid-template-columns: 1fr;
@@ -271,10 +349,12 @@
 </style>
 </head>
 <body id="top">
+<div class="ascii-rail ascii-rail-left" aria-hidden="true"><pre id="ascii-left"></pre></div>
+<div class="ascii-rail ascii-rail-right" aria-hidden="true"><pre id="ascii-right"></pre></div>
 <main>
   <header>
     <h1>The Forest Fools Wiki</h1>
-    <p class="subtitle">base de donnees du jeu en style terminal</p>
+    <!-- <p class="subtitle">game database in terminal style</p> -->
   </header>
 
   <p class="separator">====================================================================================================================</p>
@@ -285,27 +365,27 @@
     <p class="intro-line">main objective: take the king's quest and slay the ancient dragon</p>
   </section>
 
-  <nav class="quick-nav" id="sommaire" aria-label="Navigation rapide">
-    <a href="#objets">objets</a>
-    <a href="#ennemis">ennemis</a>
-    <a href="#monde">monde</a>
-    <a href="#lieux">lieux</a>
-    <a href="#quetes">quetes</a>
-    <a href="#personnages">personnages</a>
-    <a href="#systemes">systemes</a>
+  <nav class="quick-nav" id="sommaire" aria-label="Quick navigation">
+    <a href="#objets">items</a>
+    <a href="#ennemis">enemies</a>
+    <a href="#monde">world</a>
+    <a href="#lieux">locations</a>
+    <a href="#quetes">quests</a>
+    <a href="#personnages">characters</a>
+    <a href="#systemes">systems</a>
   </nav>
 
   <div class="top-home">
-    <a class="back-link" href="index.html">retour a la page principale</a>
+    <a class="back-link" href="index.html">back to main page</a>
   </div>
 
   <section class="wiki-section" id="objets">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Objets</h2>
+    <h2 class="section-title">Category: Items</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Armes</h3>
-        <div class="table-head"><span>Nom</span><span>Achat</span><span>Vente</span><span>Stats</span></div>
+        <h3>Subcategory: Weapons</h3>
+        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
         <div class="table-row"><strong>Rusty Sword</strong><span>5 gold</span><span>2 gold</span><span class="table-note">ATK +3</span></div>
         <div class="table-row"><strong>Iron Dagger</strong><span>12 gold</span><span>6 gold</span><span class="table-note">ATK +5</span></div>
         <div class="table-row"><strong>Iron Sword</strong><span>25 gold</span><span>12 gold</span><span class="table-note">ATK +8</span></div>
@@ -318,19 +398,19 @@
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Armures</h3>
-        <div class="table-head"><span>Nom</span><span>Achat</span><span>Vente</span><span>Stats</span></div>
-        <div class="table-row"><strong>Cloth Rags</strong><span>3 gold</span><span>1 gold</span><span class="table-note">ARM +1</span></div>
-        <div class="table-row"><strong>Leather Vest</strong><span>15 gold</span><span>7 gold</span><span class="table-note">ARM +4</span></div>
-        <div class="table-row"><strong>Chainmail</strong><span>45 gold</span><span>22 gold</span><span class="table-note">ARM +8</span></div>
-        <div class="table-row"><strong>Plate Armor</strong><span>100 gold</span><span>50 gold</span><span class="table-note">ARM +14</span></div>
-        <div class="table-row"><strong>Dark Plate</strong><span>250 gold</span><span>125 gold</span><span class="table-note">ARM +20</span></div>
-        <div class="table-row"><strong>Shadow Cloak</strong><span>80 gold</span><span>40 gold</span><span class="table-note">ARM +10</span></div>
+        <h3>Subcategory: Armor</h3>
+        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
+        <div class="table-row"><strong>Cloth Rags</strong><span>3 gold</span><span>1 gold</span><span class="table-note">DEF +1</span></div>
+        <div class="table-row"><strong>Leather Vest</strong><span>15 gold</span><span>7 gold</span><span class="table-note">DEF +4 | Dodge 10%</span></div>
+        <div class="table-row"><strong>Chainmail</strong><span>45 gold</span><span>22 gold</span><span class="table-note">DEF +8</span></div>
+        <div class="table-row"><strong>Plate Armor</strong><span>100 gold</span><span>50 gold</span><span class="table-note">DEF +14</span></div>
+        <div class="table-row"><strong>Dark Plate</strong><span>250 gold</span><span>125 gold</span><span class="table-note">DEF +20</span></div>
+        <div class="table-row"><strong>Shadow Cloak</strong><span>80 gold</span><span>40 gold</span><span class="table-note">DEF +10 | Dodge 20%</span></div>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Consommables</h3>
-        <div class="table-head"><span>Nom</span><span>Achat</span><span>Vente</span><span>Stats</span></div>
+        <h3>Subcategory: Consumables</h3>
+        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
         <div class="table-row"><strong>Small Potion</strong><span>8 gold</span><span>4 gold</span><span class="table-note">Heal 25</span></div>
         <div class="table-row"><strong>Medium Potion</strong><span>20 gold</span><span>10 gold</span><span class="table-note">Heal 50</span></div>
         <div class="table-row"><strong>Large Potion</strong><span>45 gold</span><span>22 gold</span><span class="table-note">Heal 100</span></div>
@@ -338,8 +418,8 @@
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Objets Divers</h3>
-        <div class="table-head"><span>Nom</span><span>Achat</span><span>Vente</span><span>Stats</span></div>
+        <h3>Subcategory: Miscellaneous Items</h3>
+        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
         <div class="table-row"><strong>Old Key</strong><span>2 gold</span><span>1 gold</span><span class="table-note">-</span></div>
         <div class="table-row"><strong>Skull Amulet</strong><span>30 gold</span><span>15 gold</span><span class="table-note">-</span></div>
         <div class="table-row"><strong>Raven Feather</strong><span>1 gold</span><span>1 gold</span><span class="table-note">-</span></div>
@@ -349,15 +429,15 @@
         <div class="table-row"><strong>Iron Ring</strong><span>10 gold</span><span>5 gold</span><span class="table-note">-</span></div>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="ennemis">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Ennemis</h2>
+    <h2 class="section-title">Category: Enemies</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Bestiaire Standard</h3>
+        <h3>Subcategory: Standard Bestiary</h3>
         <div class="catalog"><strong>Hollow Wraith</strong><p>30 HP | ATK 6 | gold 5-15 | XP 15</p></div>
         <div class="catalog"><strong>Skeletal Soldier</strong><p>40 HP | ATK 8 | gold 8-20 | XP 20</p></div>
         <div class="catalog"><strong>Plague Rat Swarm</strong><p>20 HP | ATK 4 | gold 2-8 | XP 8</p></div>
@@ -372,46 +452,57 @@
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Boss</h3>
-        <div class="catalog"><strong>The Ancient Dragon</strong><p>300 HP de base | ATK 30 de base | gold 100-250 | XP 500</p></div>
-        <div class="catalog"><strong>Comportement</strong><p>attaque speciale inferno breath avec 30% de chance et degats doubles</p></div>
-        <div class="catalog"><strong>Lieu du combat</strong><p>Dragon Lair &gt; nest</p></div>
-        <div class="catalog"><strong>Condition notable</strong><p>le combat du dragon existe a part et marque la quete principale comme terminee</p></div>
-        <div class="catalog"><strong>Recompense</strong><p>Dragon Slayer Blade + gold + XP</p></div>
+        <h3>Subcategory: Boss</h3>
+        <div class="catalog"><strong>The Ancient Dragon</strong><p>350 HP | 40 ATK (fixed) | gold 100-250 | XP 500</p></div>
+        <div class="catalog"><strong>Behavior</strong><p>special attack inferno breath with 30% chance and double damage</p></div>
+        <div class="catalog"><strong>Combat Location</strong><p>Dragon Lair &gt; nest</p></div>
+        <div class="catalog"><strong>Notable Condition</strong><p>the dragon fight is standalone and marks the main quest as completed</p></div>
+        <div class="catalog"><strong>Reward</strong><p>Dragon Slayer Blade + gold + XP</p></div>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="monde">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Monde</h2>
+    <h2 class="section-title">Category: World</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Carte</h3>
+        <h3>Subcategory: Map</h3>
         <ul>
-          <li>monde genere sur une grille 10x10, colonnes A a J et lignes 1 a 10</li>
-          <li>la capitale est toujours placee en E5</li>
-          <li>les autres lieux sont places aleatoirement a chaque partie</li>
-          <li>les lieux caches restent non reveles tant qu'un dialogue ou un evenement ne les montre pas</li>
+          <li>world generated on a 10x10 grid, columns A to J and rows 1 to 10</li>
+          <li>the capital is always placed at E5</li>
+          <li>other locations are placed randomly each game</li>
+          <li>hidden locations remain unrevealed until a dialogue or event reveals them</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Repartition Des Lieux</h3>
+        <h3>Subcategory: Location Distribution</h3>
         <ul>
           <li>forest x3</li>
           <li>village x3</li>
           <li>cave x2</li>
           <li>castle x2</li>
           <li>dungeon x2</li>
+          <li>port x? (on sand tiles)</li>
           <li>dragon_lair x1</li>
-          <li>tout le reste de la grille est compose de plains</li>
+          <li>the rest of the grid is composed of plains</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Symboles De Carte</h3>
+        <h3>Subcategory: Terrain</h3>
+        <ul>
+          <li>water (blue) — borders of the map, impassable</li>
+          <li>sand (yellow) — coastal tiles between water and land</li>
+          <li>grass (green / dark green) — interior of the map</li>
+        </ul>
+        <p class="muted">added in patch 1.0.1</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Map Symbols</h3>
         <ul>
           <li>. = plains</li>
           <li>T = forest</li>
@@ -421,36 +512,39 @@
           <li>X = dungeon</li>
           <li>K = capital</li>
           <li>D = dragon_lair</li>
+          <li>P = port</li>
+          <li>~ = water (impassable)</li>
+          <li>: = sand</li>
         </ul>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="lieux">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Lieux</h2>
+    <h2 class="section-title">Category: Locations</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Plains</h3>
-        <p>terrain vide et desole. Les plains servent de cases de transition entre les lieux speciaux.</p>
-        <p class="muted">ambiance: landes grises, brume, arbre mort, ossements et sentiment d'etre observe.</p>
+        <h3>Subcategory: Plains</h3>
+        <p>empty and desolate terrain. Plains serve as transition tiles between special locations.</p>
+        <p class="muted">atmosphere: grey moors, mist, dead trees, bones and a feeling of being watched.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Forest</h3>
-        <p>bois ancien, etouffant et tres sombre. C'est un lieu de combat possible.</p>
+        <h3>Subcategory: Forest</h3>
+        <p>ancient, suffocating and very dark woods. This is a possible combat location.</p>
         <ul>
           <li>clearing</li>
           <li>ruins</li>
           <li>stream</li>
         </ul>
-        <p class="muted">ambiance: racines tordues, champignons luisants, murmures dans les pins noirs.</p>
+        <p class="muted">atmosphere: twisted roots, glowing mushrooms, whispers in the black pines.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Village</h3>
-        <p>petit hameau gothique avec commercants et PNJ de rumeurs.</p>
+        <h3>Subcategory: Village</h3>
+        <p>small gothic hamlet with merchants and rumor NPCs.</p>
         <ul>
           <li>merchant</li>
           <li>blacksmith</li>
@@ -458,12 +552,12 @@
           <li>chapel</li>
           <li>square</li>
         </ul>
-        <p class="muted">ambiance: maisons penchees, cloche fendue, portes fermees et peur diffuse.</p>
+        <p class="muted">atmosphere: leaning houses, cracked bell, closed doors and diffuse fear.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Cave</h3>
-        <p>grotte froide et humide. Lieu de combat et de fouille.</p>
+        <h3>Subcategory: Cave</h3>
+        <p>cold and damp cave. Combat and search location.</p>
         <ul>
           <li>entrance</li>
           <li>corridor</li>
@@ -471,12 +565,12 @@
           <li>altar</li>
           <li>treasure_room</li>
         </ul>
-        <p class="muted">ambiance: air stale, gouttes d'eau, griffures et anciennes torches eteintes.</p>
+        <p class="muted">atmosphere: stale air, water drops, claw marks and old extinguished torches.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Castle</h3>
-        <p>forteresse en ruine, noire et envahie par le brouillard. Lieu de combat.</p>
+        <h3>Subcategory: Castle</h3>
+        <p>ruined fortress, black and shrouded in fog. Combat location.</p>
         <ul>
           <li>courtyard</li>
           <li>great_hall</li>
@@ -484,12 +578,12 @@
           <li>dungeon_cells</li>
           <li>throne_room</li>
         </ul>
-        <p class="muted">ambiance: tours cassees, corbeaux, gravats, salle du trone poussiereuse.</p>
+        <p class="muted">atmosphere: broken towers, crows, rubble, dusty throne room.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Dungeon</h3>
-        <p>descente vers l'obscurite avec portes ferrees, chaines et langue inconnue gravee dans les murs.</p>
+        <h3>Subcategory: Dungeon</h3>
+        <p>descent into darkness with iron doors, chains and unknown language engraved in the walls.</p>
         <ul>
           <li>entrance</li>
           <li>corridor</li>
@@ -500,8 +594,8 @@
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Capital</h3>
-        <p>coeur du royaume et point de depart du joueur. La capitale accueille le roi et un marchand.</p>
+        <h3>Subcategory: Capital</h3>
+        <p>heart of the kingdom and player starting point. The capital houses the king and a merchant.</p>
         <ul>
           <li>courtyard</li>
           <li>great_hall</li>
@@ -509,199 +603,286 @@
           <li>barracks</li>
           <li>merchant</li>
         </ul>
-        <p class="muted">ambiance: murailles antiques, palais royal et rues pleines de soldats et de marchands.</p>
+        <p class="muted">atmosphere: ancient walls, royal palace and streets full of soldiers and merchants.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Dragon Lair</h3>
-        <p>caverne immense noircie par le feu. Lieu final de la quete principale.</p>
+        <h3>Subcategory: Port</h3>
+        <p>coastal settlement built on sand tiles. Features a dock, a tavern and a merchant.</p>
+        <ul>
+          <li>dock — chalutier amarré, explorateur vendant la carte complète (200 gold)</li>
+          <li>tavern — dormir pour 10 gold (restaure la vie, donne de l'XP, reset le stock marchand)</li>
+          <li>merchant — équipement et consommables</li>
+        </ul>
+        <p class="muted">atmosphere: salt wind, creaking wood, fishnets drying under grey clouds.</p>
+        <p class="muted">added in patch 1.0.1</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Dragon Lair</h3>
+        <p>immense cavern blackened by fire. Final location of the main quest.</p>
         <ul>
           <li>entrance</li>
           <li>tunnel</li>
           <li>hoard</li>
           <li>nest</li>
         </ul>
-        <p class="muted">ambiance: soufre, ossements, traces de griffes et respiration d'une creature antique.</p>
+        <p class="muted">atmosphere: sulfur, bones, claw marks and breathing of an ancient creature.</p>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Sous-lieux</h3>
+        <h3>Subcategory: Sub-locations</h3>
         <ul>
-          <li>merchant : boutique poussiereuse avec armes, potions et curiosites</li>
-          <li>blacksmith : forge rougeoyante et artisan balafre</li>
-          <li>tavern : salle enfumee, clientele silencieuse et rumeurs</li>
-          <li>chapel : petit lieu de priere froid et fissure</li>
-          <li>square : place vide avec puits et gibet</li>
-          <li>entrance : entree etroite avec vieilles torches</li>
-          <li>corridor : couloir bas et humide</li>
-          <li>crypt : sarcophages ouverts et odeur de decomposition</li>
-          <li>altar : autel noir et symboles graves</li>
-          <li>treasure_room : coffres, poussiere et toiles</li>
-          <li>courtyard : cour noyee dans le brouillard</li>
-          <li>great_hall : grande salle effondree sous la lune</li>
-          <li>tower : escalier en spirale et vent glacant</li>
-          <li>dungeon_cells : cellules vides et squelette enchaine</li>
-          <li>throne_room : salle du trone de pierre noire</li>
-          <li>clearing : clairiere pale aux champignons en cercle</li>
-          <li>ruins : fondations detruites et vestiges envahis</li>
-          <li>stream : ruisseau froid au gout de fer</li>
-          <li>barracks : chambres de soldats qui affutent leurs lames</li>
-          <li>tunnel : galerie immense griffee du sol au plafond</li>
-          <li>hoard : salle de tresors draconiques</li>
-          <li>nest : nid d'os et pierre calcinee ou repose le dragon</li>
+          <li>merchant : dusty shop with weapons, potions and curiosities</li>
+          <li>blacksmith : glowing forge and scarred craftsman</li>
+          <li>tavern : smoky room, silent clientele and rumors</li>
+          <li>chapel : small cold and cracked place of prayer</li>
+          <li>square : empty square with well and gibbet</li>
+          <li>entrance : narrow entrance with old torches</li>
+          <li>corridor : low and damp corridor</li>
+          <li>crypt : open sarcophagi and smell of decay</li>
+          <li>altar : black altar and engraved symbols</li>
+          <li>treasure_room : chests, dust and cobwebs</li>
+          <li>courtyard : courtyard drowned in fog</li>
+          <li>great_hall : great hall collapsed under the moon</li>
+          <li>tower : spiral staircase and icy wind</li>
+          <li>dungeon_cells : empty cells and chained skeleton</li>
+          <li>throne_room : throne room of black stone</li>
+          <li>clearing : pale clearing with mushrooms in a circle</li>
+          <li>ruins : destroyed foundations and overgrown remains</li>
+          <li>stream : cold stream with a taste of iron</li>
+          <li>barracks : soldier chambers where blades are sharpened</li>
+          <li>tunnel : immense gallery clawed from floor to ceiling</li>
+          <li>hoard : room of draconic treasures</li>
+          <li>nest : nest of bone and charred stone where the dragon rests</li>
         </ul>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="quetes">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Quetes</h2>
+    <h2 class="section-title">Category: Quests</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Quete Principale</h3>
-        <div class="mini"><strong>Nom</strong><p>slay the ancient dragon</p></div>
-        <div class="mini"><strong>Donneur de quete</strong><p>The King dans capital &gt; throne_room</p></div>
-        <div class="mini"><strong>Condition de depart</strong><p>atteindre le niveau 5 puis parler au roi</p></div>
-        <div class="mini"><strong>Effet</strong><p>le roi revele la position du Dragon Lair sur la carte</p></div>
-        <div class="mini"><strong>Objectif</strong><p>aller au nest du Dragon Lair et tuer The Ancient Dragon</p></div>
+        <h3>Subcategory: Main Quest</h3>
+        <div class="mini"><strong>Name</strong><p>slay the ancient dragon</p></div>
+        <div class="mini"><strong>Quest Giver</strong><p>The King in capital &gt; throne_room</p></div>
+        <div class="mini"><strong>Starting Condition</strong><p>reach level 5 then speak to the king</p></div>
+        <div class="mini"><strong>Effect</strong><p>the king reveals the Dragon Lair position on the map</p></div>
+        <div class="mini"><strong>Objective</strong><p>go to the nest in Dragon Lair and kill The Ancient Dragon</p></div>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Etats De Quete</h3>
+        <h3>Subcategory: Quest States</h3>
         <ul>
-          <li><strong>none</strong> : aucune quete recue</li>
-          <li><strong>given</strong> : quete donnee par le roi, dragon encore vivant</li>
-          <li><strong>completed</strong> : dragon tue, royaume sauve</li>
+          <li><strong>none</strong> : no quest received</li>
+          <li><strong>given</strong> : quest given by the king, dragon still alive</li>
+          <li><strong>completed</strong> : dragon slain, kingdom saved</li>
         </ul>
-        <p class="muted">dialogue final du roi: le joueur est retenu comme une legende.</p>
+        <p class="muted">king's final dialogue: the player is remembered as a legend.</p>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="personnages">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Personnages</h2>
+    <h2 class="section-title">Category: Characters</h2>
     <div class="section-grid three">
       <article class="block">
-        <h3>Sous-categorie: Personnages Royaux</h3>
-        <div class="catalog"><strong>The King</strong><p>situe dans capital &gt; throne_room | lance la quete du dragon | refuse si niveau inferieur a 5</p></div>
+        <h3>Subcategory: Royal Characters</h3>
+        <div class="catalog"><strong>The King</strong><p>located in capital &gt; throne_room | launches the dragon quest | refuses if level below 5</p></div>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Village</h3>
-        <div class="catalog"><strong>Barkeep</strong><p>tavern | donne des rumeurs sur des lieux caches</p></div>
-        <div class="catalog"><strong>Drunk</strong><p>tavern | parle de tresors et de morts-vivants</p></div>
-        <div class="catalog"><strong>Hooded Figure</strong><p>tavern | donne des avertissements mystiques</p></div>
-        <div class="catalog"><strong>Blacksmith</strong><p>blacksmith | conseille d'ameliorer son equipement</p></div>
-        <div class="catalog"><strong>Priest</strong><p>chapel | avertit sur les lieux maudits</p></div>
-        <div class="catalog"><strong>Old Woman</strong><p>square | parle des corbeaux, des secrets et de la mort</p></div>
-        <div class="catalog"><strong>Guard</strong><p>square | mentionne des expeditions perdues</p></div>
-        <div class="catalog"><strong>Merchant</strong><p>merchant | vend du materiel et des potions</p></div>
+        <h3>Subcategory: Village</h3>
+        <div class="catalog"><strong>Barkeep</strong><p>tavern | gives rumors about hidden locations</p></div>
+        <div class="catalog"><strong>Drunk</strong><p>tavern | talks about treasures and undead</p></div>
+        <div class="catalog"><strong>Hooded Figure</strong><p>tavern | gives mystical warnings</p></div>
+        <div class="catalog"><strong>Blacksmith</strong><p>blacksmith | advises to improve equipment</p></div>
+        <div class="catalog"><strong>Priest</strong><p>chapel | warns about cursed locations</p></div>
+        <div class="catalog"><strong>Old Woman</strong><p>square | talks about crows, secrets and death</p></div>
+        <div class="catalog"><strong>Guard</strong><p>square | mentions lost expeditions</p></div>
+        <div class="catalog"><strong>Merchant</strong><p>merchant | sells equipment and potions</p></div>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Rencontres Sauvages</h3>
-        <div class="catalog"><strong>Hermit</strong><p>clearing | parle d'un appel venu d'un autre lieu</p></div>
-        <div class="catalog"><strong>Ghost</strong><p>ruins | demande vengeance et evoque un lieu fatal</p></div>
-        <div class="catalog"><strong>Dying Knight</strong><p>courtyard | supplie le joueur de finir le combat</p></div>
-        <div class="catalog"><strong>Survivor</strong><p>entrance | avertit sur les profondeurs mais parle de richesses</p></div>
+        <h3>Subcategory: Wild Encounters</h3>
+        <div class="catalog"><strong>Hermit</strong><p>clearing | talks about a call from another place</p></div>
+        <div class="catalog"><strong>Ghost</strong><p>ruins | demands vengeance and evokes a fatal place</p></div>
+        <div class="catalog"><strong>Dying Knight</strong><p>courtyard | begs the player to finish the fight</p></div>
+        <div class="catalog"><strong>Survivor</strong><p>entrance | warns about the depths but talks of riches</p></div>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Port &amp; Castle NPCs</h3>
+        <div class="catalog"><strong>Explorer</strong><p>port &gt; dock | sells the complete map for 200 gold (reveals all locations)</p></div>
+        <div class="catalog"><strong>Mage</strong><p>castle/capital &gt; courtyard | sells spells</p></div>
+        <div class="catalog"><strong>Warlock</strong><p>castle &gt; tower | sells spells</p></div>
+        <p class="muted">NPCs reveal a maximum of 2 locations. After that, buy the map from the Explorer.</p>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <section class="wiki-section" id="systemes">
     <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Categorie: Systemes</h2>
+    <h2 class="section-title">Category: Systems</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Sous-categorie: Joueur</h3>
+        <h3>Subcategory: Player</h3>
         <ul>
-          <li>depart: 100 HP, 20 gold, niveau 1</li>
-          <li>attaque de base: 3</li>
-          <li>armure de base: 0</li>
-          <li>equipement initial: Rusty Sword et Cloth Rags</li>
-          <li>inventaire initial: Small Potion</li>
-          <li>position initiale: E5</li>
+          <li>start: 100 HP, 50 Mana, 20 gold, level 1</li>
+          <li>base attack: 3</li>
+          <li>base defense: 0</li>
+          <li>starting equipment: Rusty Sword and Cloth Rags</li>
+          <li>starting inventory: Small Potion</li>
+          <li>starting position: E5</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Progression</h3>
+        <h3>Subcategory: Progression</h3>
         <ul>
-          <li>XP initiale requise: 50</li>
-          <li>a chaque niveau: +10 max HP, soin complet, +1 attaque de base</li>
-          <li>l'XP requise ensuite est multipliee par 1.5</li>
-          <li>les ennemis standards montent en puissance avec le niveau du joueur</li>
-          <li>le dragon scale aussi, mais moins vite</li>
+          <li>initial XP required: 50</li>
+          <li>each level: +10 max HP, +10 max Mana, full heal, +1 base attack</li>
+          <li>required XP is then multiplied by 1.5</li>
+          <li>standard enemies scale up with player level</li>
+          <li>the dragon has fixed stats (350 HP, 40 ATK)</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Combat</h3>
+        <h3>Subcategory: Combat</h3>
         <ul>
-          <li>zones de combat: dungeon, cave, forest, castle</li>
-          <li>actions: attack, use potion, flee</li>
-          <li>les degats recus sont reduits par l'armure via raw damage - armor // 2</li>
-          <li>fuite reussie: 50% de chance</li>
-          <li>une zone peut etre marquee cleared temporairement apres victoire</li>
+          <li>combat zones: dungeon, cave, forest, castle</li>
+          <li>actions: attack, cast (spell), use potion, flee</li>
+          <li>damage received is reduced by defense via raw damage - defense // 2</li>
+          <li>dodge: each enemy attack can be dodged based on armor dodge % (e.g. Shadow Cloak 20%)</li>
+          <li>successful flee: 50% chance</li>
+          <li>a zone can be temporarily marked cleared after victory</li>
+          <li>enemies and loot respawn after 15 actions</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Loot Et Recherche</h3>
+        <h3>Subcategory: Mana &amp; Spells</h3>
         <ul>
-          <li>la commande search ne fonctionne qu'a l'interieur d'un lieu</li>
-          <li>zones de recherche majeures: treasure_room, crypt, altar, ruins, clearing, throne_room, great_hall, tower, dungeon_cells, hoard</li>
-          <li>search donne du gold et peut donner un item</li>
-          <li>les combats peuvent aussi faire tomber des consommables, objets divers, armes ou armures</li>
-          <li>un lieu vide ne peut plus etre fouille une seconde fois</li>
+          <li>base mana: 50, +10 per level-up</li>
+          <li>mana is restored by sleeping at a tavern (10 gold)</li>
+          <li>buy spells from the Mage (castle/capital courtyard) or the Warlock (castle tower)</li>
+          <li>maximum of 3 spells equipped at a time</li>
+          <li>use "cast" command during combat to cast a spell</li>
+        </ul>
+        <p class="muted">added in patch 1.0.2</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Sleep</h3>
+        <ul>
+          <li>available at any tavern (village or port)</li>
+          <li>costs 10 gold</li>
+          <li>fully restores HP and Mana</li>
+          <li>gives a small amount of XP</li>
+          <li>resets merchant stock</li>
+        </ul>
+        <p class="muted">added in patch 1.0.1</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Loot And Search</h3>
+        <ul>
+          <li>the search command only works inside a location</li>
+          <li>major search zones: treasure_room, crypt, altar, ruins, clearing, throne_room, great_hall, tower, dungeon_cells, hoard</li>
+          <li>search gives gold and may give an item</li>
+          <li>fights can also drop consumables, misc items, weapons or armor</li>
+          <li>an empty location cannot be searched a second time</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Marchand</h3>
+        <h3>Subcategory: Merchant</h3>
         <ul>
-          <li>stock genere aleatoirement</li>
-          <li>jusqu'a 3 consommables differents</li>
-          <li>entre 1 et 3 armes</li>
-          <li>60% de chance d'ajouter une armure</li>
-          <li>revente des objets a la moitie du prix, minimum 1 gold</li>
+          <li>stock generated randomly</li>
+          <li>up to 3 different consumables</li>
+          <li>between 1 and 3 weapons</li>
+          <li>60% chance to add an armor</li>
+          <li>items resold at half price, minimum 1 gold</li>
         </ul>
       </article>
 
       <article class="block">
-        <h3>Sous-categorie: Commandes</h3>
+        <h3>Subcategory: Commands</h3>
         <ul>
-          <li>help</li>
-          <li>map</li>
+          <li>help (h)</li>
+          <li>map (m)</li>
           <li>cd {cell}, cd {location}, cd {subloc}, cd ..</li>
-          <li>look</li>
-          <li>talk</li>
-          <li>stats</li>
-          <li>inventory / inv</li>
-          <li>equip {item}</li>
+          <li>look (l)</li>
+          <li>talk (t)</li>
+          <li>stats (s)</li>
+          <li>fight (f)</li>
+          <li>inventory / inv (i)</li>
+          <li>equip {item} (e)</li>
+          <li>unequip {weapon|armor} (u)</li>
           <li>use {item}</li>
-          <li>buy {item}</li>
+          <li>buy {item} (b)</li>
           <li>sell {item}</li>
-          <li>fight</li>
+          <li>cast {spell} — during combat</li>
+          <li>sleep — at tavern, costs 10 gold</li>
           <li>search</li>
-          <li>quit / exit</li>
+          <li>cheat — unlocks everything (beta testing)</li>
+          <li>quit / exit (q)</li>
         </ul>
+        <p class="muted">auto-completion: type the beginning of an item name (e.g. "sell sm" → Small Potion).</p>
+        <p class="muted">keyboard shortcuts in parentheses, added in patch 1.0.1.</p>
       </article>
     </div>
-    <p class="section-back"><a href="#top">retour au sommaire</a></p>
+    <p class="section-back"><a href="#top">back to top</a></p>
   </section>
 
   <p class="separator">====================================================================================================================</p>
 
   <footer>
-    <p><a class="back-link" href="index.html">retour au site principal</a></p>
+    <p><a class="back-link" href="index.html">back to main site</a></p>
     <p style="margin-top: 28px;">contact: forestfools@blackterminal.dev</p>
   </footer>
 </main>
+<script>
+  (function () {
+    var left = document.getElementById("ascii-left");
+    var right = document.getElementById("ascii-right");
+    var chars = "!@#$%^&*()_+-=[]{}|;:,.<>?/\\~";
+
+    function randomLine() {
+      var baseLength = 80 + Math.floor(Math.random() * 41);
+      var line = "";
+      for (var i = 0; i < baseLength; i++) {
+        line += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return line;
+    }
+
+    function fillAscii() {
+      var lineHeight = 10;
+      var lines = Math.ceil(window.innerHeight / lineHeight) + 2;
+      var leftLines = [];
+      var rightLines = [];
+
+      for (var i = 0; i < lines; i++) {
+        leftLines.push(randomLine());
+        rightLines.push(randomLine());
+      }
+
+      left.textContent = leftLines.join("\n");
+      right.textContent = rightLines.join("\n");
+    }
+
+    fillAscii();
+    window.addEventListener("resize", fillAscii);
+    window.setInterval(fillAscii, 900);
+  })();
+</script>
 </body>
 </html>

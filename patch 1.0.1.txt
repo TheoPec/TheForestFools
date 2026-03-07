@@ -1,0 +1,11 @@
+Patch 1.0.1 — Terrain, Ports & QoL
+
+Logo corrigé : "THE FOREST FOOLS" s'affiche correctement, version affichée au lancement.
+Terrain coloré : la map a maintenant de l'eau (bleu) sur les bords, du sable (jaune) en côte, de l'herbe (vert/vert foncé) à l'intérieur. On ne peut pas traverser l'eau.
+Ports : nouveau lieu sur le sable avec dock (chalutier pour future MAJ), taverne et marchand.
+Commande sleep : dormir à la taverne pour 10 gold — restaure toute la vie, donne un peu d'XP et reset le stock des marchands.
+Commande unequip : déséquiper arme ou armure.
+Respawn des mobs : ennemis et loot reviennent après 15 actions.
+Inventaire groupé : les doublons sont affichés avec un compteur (x3).
+Raccourcis clavier : h, m, l, t, s, f, i, e, u, b, q.
+Auto-complétion : taper le début d'un nom d'item suffit (ex: sell sm → Small Potion).

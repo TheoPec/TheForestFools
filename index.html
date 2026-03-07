@@ -6,11 +6,23 @@
 <title>The Forest Fools</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
+  @font-face {
+    font-family: "Enchanted Land";
+    src: url("Enchanted%20Land.otf") format("opentype");
+  }
+
+  @font-face {
+    font-family: "Old London";
+    src: url("old_london/OldLondon.ttf") format("truetype");
+  }
+
   :root {
     --bg: #000000;
     --text: #d7ffd7;
     --muted: #8fc78f;
     --line: #d9d9d9;
+    --panel: rgba(18, 32, 18, 0.42);
+    --ascii-rail-width: 240px;
   }
 
   * {
@@ -21,9 +33,55 @@
   body {
     margin: 0;
     min-height: 100%;
-    background: radial-gradient(circle at top, #0d160d 0%, var(--bg) 45%);
+    background-color: #000000;
+    background-image: linear-gradient(to bottom, #050505 0%, #000000 35%, #040404 100%);
     color: var(--text);
+    font-family: "Enchanted Land", "Courier New", Courier, monospace;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ascii-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--ascii-rail-width);
+    overflow: hidden;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 3;
+  }
+
+  .ascii-rail-left {
+    left: 0;
+  }
+
+  .ascii-rail-right {
+    right: 0;
+  }
+
+  .ascii-rail-right pre {
+    text-align: right;
+  }
+
+  .ascii-rail pre {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    color: rgba(244, 255, 244, 0.9);
     font-family: "Courier New", Courier, monospace;
+    font-size: 9px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    user-select: none;
+    overflow: hidden;
   }
 
   body::before {
@@ -31,6 +89,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
+    z-index: 2;
     background: repeating-linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0.03) 0,
@@ -39,6 +98,12 @@
       transparent 3px
     );
     opacity: 0.16;
+  }
+
+  body {
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
   }
 
   main {
@@ -50,6 +115,8 @@
     align-items: center;
     text-align: center;
     gap: 30px;
+    position: relative;
+    z-index: 5;
   }
 
   h1,
@@ -60,10 +127,20 @@
   }
 
   h1 {
-    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-family: "Old London", serif;
+    font-size: clamp(2.3rem, 7vw, 3.8rem);
     letter-spacing: 0.24em;
     text-transform: uppercase;
     color: #f1fff1;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.15rem, 3vw, 1.7rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f1fff1;
+    text-align: center;
   }
 
   .separator {
@@ -78,6 +155,8 @@
 
   .tagline,
   .lore,
+  .features,
+  .notice,
   .links,
   footer {
     display: grid;
@@ -87,6 +166,7 @@
 
   .line {
     color: var(--text);
+    font-size: clamp(1rem, 2.1vw, 1.28rem);
   }
 
   .line::before,
@@ -105,13 +185,75 @@
     overflow-x: auto;
   }
 
+  .panel {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    padding: 18px 18px 20px;
+    border: 1px solid rgba(217, 217, 217, 0.42);
+    background: var(--panel);
+    box-shadow: 0 0 30px rgba(20, 40, 20, 0.18);
+    text-align: center;
+  }
+
+  .intro-copy {
+    max-width: 56ch;
+    margin: 0 auto;
+    color: #ebffeb;
+    font-size: clamp(1.02rem, 2.1vw, 1.22rem);
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .features {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 12px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .feature-card {
+    padding: 14px 12px;
+    border: 1px solid rgba(217, 217, 217, 0.28);
+    background: rgba(255, 255, 255, 0.02);
+    display: grid;
+    justify-items: center;
+  }
+
+  .feature-card strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #f1fff1;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .feature-card p,
+  .notice p,
+  footer p {
+    font-size: clamp(0.98rem, 1.9vw, 1.12rem);
+    line-height: 1.5;
+  }
+
+  .notice {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    padding: 18px;
+    border: 1px dashed rgba(217, 217, 217, 0.4);
+    background: rgba(255, 255, 255, 0.02);
+    text-align: center;
+  }
+
   a {
     color: #f1fff1;
     text-decoration: none;
     display: inline-block;
-    padding: 8px 14px;
+    padding: 10px 16px;
     border: 1px solid var(--line);
     background: #0b0b0b;
+    font-size: clamp(1rem, 2vw, 1.12rem);
   }
 
   a:hover,
@@ -121,15 +263,101 @@
     outline: none;
   }
 
+  .patch-list {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    display: grid;
+    gap: 12px;
+  }
+
+  .patch-toggle {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid rgba(217, 217, 217, 0.42);
+    background: var(--panel);
+    color: #f1fff1;
+    font-family: "Enchanted Land", "Courier New", Courier, monospace;
+    font-size: clamp(1rem, 2vw, 1.14rem);
+    letter-spacing: 0.06em;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .patch-toggle:hover,
+  .patch-toggle:focus-visible {
+    background: rgba(255, 255, 255, 0.04);
+    outline: none;
+  }
+
+  .patch-toggle .arrow {
+    transition: transform 0.25s;
+  }
+
+  .patch-toggle[aria-expanded="true"] .arrow {
+    transform: rotate(90deg);
+  }
+
+  .patch-content {
+    display: none;
+    padding: 14px 18px 18px;
+    border: 1px solid rgba(217, 217, 217, 0.28);
+    border-top: none;
+    background: rgba(255, 255, 255, 0.015);
+    color: var(--text);
+    font-size: clamp(0.92rem, 1.8vw, 1.04rem);
+    line-height: 1.7;
+    text-align: left;
+  }
+
+  .patch-content.open {
+    display: block;
+  }
+
+  .patch-content ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: "— ";
+  }
+
+  .patch-content li + li {
+    margin-top: 6px;
+  }
+
+  .patch-content .patch-subtitle {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
   footer {
     padding-top: 20px;
     color: var(--muted);
   }
 
   @media (max-width: 640px) {
+    .ascii-rail {
+      width: 136px;
+    }
+
+    .ascii-rail pre {
+      font-size: 8px;
+    }
+
     main {
       padding-top: 28px;
       gap: 24px;
+    }
+
+    .panel,
+    .notice {
+      padding: 16px 14px 18px;
+    }
+
+    .features {
+      grid-template-columns: 1fr;
     }
 
     .line::before,
@@ -140,6 +368,8 @@
 </style>
 </head>
 <body>
+<div class="ascii-rail ascii-rail-left" aria-hidden="true"><pre id="ascii-left"></pre></div>
+<div class="ascii-rail ascii-rail-right" aria-hidden="true"><pre id="ascii-right"></pre></div>
 <main>
   <section aria-label="Presentation The Forest Fools">
     <h1>The Forest Fools</h1>
@@ -155,23 +385,45 @@
 
     <p class="separator">====================================================================================================================</p>
 
+    <section class="panel" aria-label="Game overview">
+      <h2>Enter The Black Forest</h2>
+      <p class="intro-copy">A cursed kingdom, a dying crown and one final hunt. Track hidden places on a shifting map, survive hostile encounters and gather enough steel to face the ancient dragon in its burning lair.</p>
+    </section>
+
+    <div class="features" aria-label="Game features">
+      <article class="feature-card">
+        <strong>Explore</strong>
+        <p>Travel across a 10x10 world filled with villages, ruins, caves and secret routes.</p>
+      </article>
+      <article class="feature-card">
+        <strong>Survive</strong>
+        <p>Fight monsters, manage potions, improve gear and escape deadly encounters when luck allows it.</p>
+      </article>
+      <article class="feature-card">
+        <strong>Finish The Quest</strong>
+        <p>Earn the king's trust, reveal the dragon's nest and bring the main quest to its brutal end.</p>
+      </article>
+    </div>
+
+    <p class="separator">====================================================================================================================</p>
+
     <pre aria-label="Dragon ascii art">
-                    /           /
-             /' .,,,,  ./
-              /';'     ,/
-           / /   ,,//,`'`
-           ( ,, '_,  ,,,' ``
-         |    /@  ,,, ;" `
-        /    .   ,''/' `,``
-       /   .     ./, `,, ` ;
-    ,./  .   ,-,',` ,,/''\,'
-   |   /; ./,,'`,,'' |   |
-   |     /   ','    /    |
-     \___/'   '     |     |
-       `,,'  |      /     `\
-             /      |        ~\
-             '       (
-          :
+              /           /
+          /' .,,,,  ./
+          /';'     ,/
+        / /   ,,//,`'`
+        ( ,, '_,  ,,,' ``
+     |    /@  ,,, ;" `
+    /    .   ,''/' `,``
+    /   .     ./, `,, ` ;
+,./  .   ,-,',` ,,/''\,'
+|   /; ./,,'`,,'' |   |
+|     /   ','    /    |
+  \___/'   '     |     |
+   `,,'  |      /     `\
+          /      |        ~\
+          '       (
+      :
     </pre>
 
     <p class="separator">====================================================================================================================</p>
@@ -181,6 +433,13 @@
       <p class="line">the king sends you into the black forest and the scorched lair</p>
       <p class="line">slay the beast and save the kingdom before everything burns</p>
     </div>
+
+    <p class="separator">====================================================================================================================</p>
+
+    <section class="notice" aria-label="Game status">
+      <h2>Current Build</h2>
+      <p>Features include map exploration, combat encounters, merchants, loot, equipment upgrades and a full dragon objective. Use the wiki to browse items, enemies, locations and quest details before the descent.</p>
+    </section>
 
     <p class="separator">====================================================================================================================</p>
 
@@ -216,22 +475,103 @@
   |=_ =       | =_-_| |  | |     |   =_      | -_   |
   |_=-_       |=_=  | |  | |     |=_=        |=-    |
 ^^^^^^^^^^`^`^^`^`^`^^^""""""""^`^^``^^`^^`^^`^`^``^`^``^``^^
-
     </pre>
+    <p class="separator">====================================================================================================================</p>
+    <section class="patch-list" aria-label="Patch notes">
+      <h2>Patch Notes</h2>
+
+      <div>
+        <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
+          <span>Patch 1.0.2 — Magie, Esquive &amp; Exploration</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="patch-content">
+          <p class="patch-subtitle">Dernière mise à jour</p>
+          <ul>
+            <li>Mana : nouveau système de mana (50 de base, +10 par level-up, restauré en dormant à la taverne).</li>
+            <li>Sorts : achetez des sorts chez le Mage (courtyard des castles/capital) ou le Warlock (tower des castles). Max 3 sorts. Utilisez "cast" en combat.</li>
+            <li>Carte complète : achetez une carte chez l'Explorateur au dock des ports (200 gold) pour révéler tous les lieux.</li>
+            <li>Limite des PNJs : les PNJs ne révèlent plus que 2 localisations max.</li>
+            <li>Esquive : les armures ont un % d'esquive (ex: Shadow Cloak 20%, Leather Vest 10%).</li>
+            <li>Défense : stat "Defense" remplace "Armor" dans l'affichage.</li>
+            <li>Commande cheat : tape "cheat" pour tout débloquer (pour le beta testing).</li>
+            <li>Dragon nerf : le dragon a maintenant 350 PV et 40 ATK fixes.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
+          <span>Patch 1.0.1 — Terrain, Ports &amp; QoL</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="patch-content">
+          <ul>
+            <li>Logo corrigé : "THE FOREST FOOLS" s'affiche correctement, version affichée au lancement.</li>
+            <li>Terrain coloré : la map a maintenant de l'eau (bleu), du sable (jaune) et de l'herbe (vert). On ne peut pas traverser l'eau.</li>
+            <li>Ports : nouveau lieu sur le sable avec dock, taverne et marchand.</li>
+            <li>Commande sleep : dormir à la taverne pour 10 gold — restaure toute la vie, donne un peu d'XP et reset le stock des marchands.</li>
+            <li>Commande unequip : déséquiper arme ou armure.</li>
+            <li>Respawn des mobs : ennemis et loot reviennent après 15 actions.</li>
+            <li>Inventaire groupé : les doublons sont affichés avec un compteur (x3).</li>
+            <li>Raccourcis clavier : h, m, l, t, s, f, i, e, u, b, q.</li>
+            <li>Auto-complétion : taper le début d'un nom d'item suffit.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
     <p class="separator">====================================================================================================================</p>
 
     <div class="links">
-      <p class="line"><a href="https://example.com/download" target="_blank" rel="noreferrer">download the game</a></p>
-      <p class="line"><a href="wiki.html">open the wiki</a></p>
+      <p class="line">download our game here</p>
+      <p class=""><a href="https://example.com/download" target="_blank" rel="noreferrer">download the game</a></p>
+      <p class="line">or access the wiki here</p>
+      <p class=""><a href="wiki.html">open the wiki</a></p>
     </div>
 
     <p class="separator">====================================================================================================================</p>
 
     <footer>
-      <p>contact: forestfools@blackterminal.dev</p>
+      <p class="line">contact us</p>
+      <p>forestfools@blackterminal.dev</p>
     </footer>
   </section>
 </main>
+<script>
+  (function () {
+    var left = document.getElementById("ascii-left");
+    var right = document.getElementById("ascii-right");
+    var chars = "!@#$%^&*()_+-=[]{}|;:,.<>?/\\~";
+
+    function randomLine() {
+      var baseLength = 80 + Math.floor(Math.random() * 41);
+      var line = "";
+      for (var i = 0; i < baseLength; i++) {
+        line += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return line;
+    }
+
+    function fillAscii() {
+      var lineHeight = 10;
+      var lines = Math.ceil(window.innerHeight / lineHeight) + 2;
+      var leftLines = [];
+      var rightLines = [];
+
+      for (var i = 0; i < lines; i++) {
+        leftLines.push(randomLine());
+        rightLines.push(randomLine());
+      }
+
+      left.textContent = leftLines.join("\n");
+      right.textContent = rightLines.join("\n");
+    }
+
+    fillAscii();
+    window.addEventListener("resize", fillAscii);
+    window.setInterval(fillAscii, 900);
+  })();
+</script>
 </body>
 </html>

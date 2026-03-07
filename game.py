@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-   _____ _  _ ___    ___  ___  ___ ___ ___ _____    ___  _   _    _    ___
-  |_   _| || | __|  | __|/ _ \\| _ \\ __/ __|_   _|  | __|| | | |  | |  / __|
-    | | | __ | _|   | _|| (_) |   / _|\\__ \\ | |    | _| | |_| |_ | |__|\\__ \\
-    |_| |_||_|___|  |_|  \\___/|_|_\\___|___/ |_|    |_|   \\___/\\__||____|___/
+   _____ _  _ ___    ___  ___  ___ ___ ___ _____    ___  ___   ___  _     ___
+  |_   _| || | __|  | __|/ _ \\| _ \\ __/ __|_   _|  | __|/ _ \\ / _ \\| |   / __|
+    | | | __ | _|   | _|| (_) |   / _|\\__ \\ | |    | _|| (_) | (_) | |__ \\__ \\
+    |_| |_||_|___|  |_|  \\___/|_|_\\___|___/ |_|    |_|  \\___/ \\___/|____|___/
 
 A dark medieval gothic exploration game for the terminal.
 """
@@ -13,6 +13,7 @@ import sys
 import os
 import textwrap
 import time
+from collections import Counter
 
 try:
     import ctypes
@@ -36,6 +37,11 @@ class C:
     CYAN    = "\033[36m"
     WHITE   = "\033[37m"
     GREY    = "\033[90m"
+    # Backgrounds
+    BG_BLUE    = "\033[44m"
+    BG_YELLOW  = "\033[43m"
+    BG_GREEN   = "\033[42m"
+    BG_DGREEN  = "\033[48;5;22m"
 
 def styled(text: str, *codes: str) -> str:
     return "".join(codes) + text + C.RESET
@@ -53,6 +59,8 @@ TILE_SYMBOLS = {
     "dungeon":    "X",
     "capital":    "K",
     "dragon_lair": "D",
+    "port":       "P",
+    "water":      "~",
 }
 
 TILE_COLORS = {
@@ -64,6 +72,8 @@ TILE_COLORS = {
     "dungeon":    C.RED,
     "capital":    C.BOLD + C.YELLOW,
     "dragon_lair": C.RED + C.BOLD,
+    "port":       C.BOLD + C.WHITE,
+    "water":      C.BOLD + C.BLUE,
 }
 
 TILE_NAMES = {
@@ -75,6 +85,15 @@ TILE_NAMES = {
     "dungeon":    "Dungeon",
     "capital":    "Capital",
     "dragon_lair": "Dragon Lair",
+    "port":       "Port",
+    "water":      "Water",
+}
+
+BG_COLORS = {
+    "water":      C.BG_BLUE,
+    "sand":       C.BG_YELLOW,
+    "grass":      C.BG_GREEN,
+    "dark_grass": C.BG_DGREEN,
 }
 
 # ---------------------------------------------------------------------------
@@ -94,12 +113,12 @@ WEAPONS = {
 }
 
 ARMORS = {
-    "cloth_rags":     {"name": "Cloth Rags",       "armor": 1,  "value": 3},
-    "leather_vest":   {"name": "Leather Vest",     "armor": 4,  "value": 15},
-    "chainmail":      {"name": "Chainmail",        "armor": 8,  "value": 45},
-    "plate_armor":    {"name": "Plate Armor",      "armor": 14, "value": 100},
-    "dark_plate":     {"name": "Dark Plate",       "armor": 20, "value": 250},
-    "shadow_cloak":   {"name": "Shadow Cloak",     "armor": 10, "value": 80},
+    "cloth_rags":     {"name": "Cloth Rags",       "armor": 1,  "dodge": 5,  "value": 3},
+    "leather_vest":   {"name": "Leather Vest",     "armor": 4,  "dodge": 10, "value": 15},
+    "chainmail":      {"name": "Chainmail",        "armor": 8,  "dodge": 3,  "value": 45},
+    "plate_armor":    {"name": "Plate Armor",      "armor": 14, "dodge": 2,  "value": 100},
+    "dark_plate":     {"name": "Dark Plate",       "armor": 20, "dodge": 5,  "value": 250},
+    "shadow_cloak":   {"name": "Shadow Cloak",     "armor": 10, "dodge": 20, "value": 80},
 }
 
 CONSUMABLES = {
@@ -118,6 +137,20 @@ MISC_ITEMS = {
     "dark_gem":       {"name": "Dark Gem",       "value": 60},
     "iron_ring":      {"name": "Iron Ring",      "value": 10},
 }
+
+SPELLS = {
+    # Mage spells (courtyard)
+    "fireball":      {"name": "Fireball",      "damage": 30, "mana": 20, "value": 50,  "source": "mage"},
+    "ice_shard":     {"name": "Ice Shard",     "damage": 20, "mana": 15, "value": 35,  "source": "mage"},
+    "heal_light":    {"name": "Heal Light",    "heal": 40,   "mana": 25, "value": 60,  "source": "mage"},
+    "arcane_shield": {"name": "Arcane Shield", "shield": 10, "mana": 20, "value": 45,  "source": "mage"},
+    # Warlock spells (castle tower)
+    "shadow_bolt":   {"name": "Shadow Bolt",   "damage": 40, "mana": 25, "value": 80,  "source": "warlock"},
+    "drain_life":    {"name": "Drain Life",    "damage": 25, "heal": 25, "mana": 30, "value": 100, "source": "warlock"},
+    "curse":         {"name": "Curse",         "weaken": 0.3, "mana": 20, "value": 70, "source": "warlock"},
+}
+
+MAP_COST = 200
 
 ALL_ITEMS = {}
 ALL_ITEMS.update(WEAPONS)
@@ -195,6 +228,11 @@ DESC_DRAGON_LAIR = [
     "Heat radiates from deep within the lair. The ceiling is lost in smoke and shadow. A low, rhythmic sound echoes through the tunnels -- breathing. Something ancient breathes here.",
 ]
 
+DESC_PORT = [
+    "A weathered harbour of salt-stained stone. Fishing boats bob at their moorings. The air is thick with the smell of brine and tar. Gulls circle overhead, their cries harsh above the crash of waves.",
+    "A small port clings to the coastline. Wooden piers stretch into dark waters. Nets hang drying between lampposts. The wind carries salt and the distant toll of a bell buoy.",
+]
+
 # Sub-location descriptions
 DESC_SUBLOCS = {
     # Village sub-locations
@@ -238,6 +276,15 @@ DESC_SUBLOCS = {
     "courtyard": [
         "A wide courtyard choked with fog. Broken statues and overturned carts litter the ground. The keep looms ahead, dark and silent.",
     ],
+    "mage": [
+        "A robed mage stands within a circle of glowing arcane runes. Ancient tomes and spell components surround them. Their eyes burn with otherworldly knowledge.",
+    ],
+    "warlock": [
+        "A dark figure in tattered robes hunches over a grimoire bound in black leather. Shadows writhe around them. The warlock looks up with hollow, burning eyes.",
+    ],
+    "explorer": [
+        "A weathered explorer sits at a table covered in maps and nautical charts. Their sun-darkened skin and salt-stained clothes speak of countless voyages.",
+    ],
     "great_hall": [
         "A vast hall with a collapsed roof. Moonlight falls on a long table still set with rusted plates. A throne sits at the far end, draped in cobwebs.",
     ],
@@ -272,6 +319,10 @@ DESC_SUBLOCS = {
     "nest": [
         "The heart of the lair. Massive bones and scorched stone form a crude nest. The heat is almost unbearable. Then you see it -- the dragon, coiled and vast, one enormous eye sliding open to regard you.",
     ],
+    "dock": [
+        "A sturdy pier of weathered planks extends over grey waters. An old chalutier rocks gently at its mooring, its nets bundled on deck. An explorer studies their maps nearby.",
+        "The dock creaks underfoot. A fishing trawler -- a chalutier -- is tied to the bollard, its hull scarred by countless voyages. An explorer with charts and maps sits on a barrel.",
+    ],
 }
 
 # ---------------------------------------------------------------------------
@@ -284,8 +335,9 @@ SUBLOCS = {
     "dungeon": ["entrance", "corridor", "crypt", "altar", "treasure_room"],
     "castle":  ["courtyard", "great_hall", "tower", "dungeon_cells", "throne_room"],
     "forest":  ["clearing", "ruins", "stream"],
-    "capital": ["courtyard", "great_hall", "throne_room", "barracks", "merchant"],
+    "capital": ["courtyard", "great_hall", "throne_room", "barracks", "merchant", "tavern"],
     "dragon_lair": ["entrance", "tunnel", "hoard", "nest"],
+    "port":    ["dock", "tavern", "merchant"],
 }
 
 # ---------------------------------------------------------------------------
@@ -361,6 +413,12 @@ NPC_DIALOGUES_WILD = {
             'A figure stumbles out of the darkness, wild-eyed. "Don\'t... don\'t go deeper." They grip your shoulder. "But if you want real treasure, the {loc_type} at {coord} is worse. And richer."',
         ],
     },
+    "dock": {
+        "old_sailor": [
+            '"The sea\'s been angry lately." The old sailor spits into the water. "Used to take the chalutier out beyond the reef. Can\'t now." He squints at the horizon. "Heard there\'s trouble at the {loc_type} near {coord}."',
+            '"That chalutier there? She\'s mine. Seaworthy, aye. But I won\'t sail until things calm down. Heard tales of a {loc_type} at {coord}. Dark tales."',
+        ],
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -385,46 +443,132 @@ def generate_merchant_stock():
 COLS = "ABCDEFGHIJ"
 ROWS = range(1, 11)
 
+
+def generate_terrain():
+    """Generate terrain layer: water on borders, sand coastline, grass/dark_grass interior."""
+    terrain = {}
+    for c in COLS:
+        for r in ROWS:
+            terrain[(c, r)] = "grass"
+
+    # Water on border cells
+    for c in COLS:
+        for r in ROWS:
+            ci = COLS.index(c)
+            ri = r - 1
+            dist = min(ci, 9 - ci, ri, 9 - ri)
+            if dist == 0 and random.random() < 0.82:
+                terrain[(c, r)] = "water"
+
+    # Extend water clusters slightly inward
+    snapshot = dict(terrain)
+    for c in COLS:
+        for r in ROWS:
+            if snapshot[(c, r)] == "water":
+                ci = COLS.index(c)
+                ri = r - 1
+                for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nc, nr = ci + dc, ri + dr
+                    if 0 <= nc < 10 and 0 <= nr < 10:
+                        npos = (COLS[nc], nr + 1)
+                        if terrain[npos] == "grass" and random.random() < 0.18:
+                            terrain[npos] = "water"
+
+    # Protect capital and surroundings
+    for dc in range(-1, 2):
+        for dr in range(-1, 2):
+            ci = COLS.index("E") + dc
+            ri = 4 + dr
+            if 0 <= ci < 10 and 0 <= ri < 10:
+                terrain[(COLS[ci], ri + 1)] = "grass"
+
+    # Sand: non-water cells adjacent to water (including diagonal)
+    for c in COLS:
+        for r in ROWS:
+            if terrain[(c, r)] != "water":
+                ci = COLS.index(c)
+                ri = r - 1
+                for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1),
+                               (-1, -1), (1, 1), (-1, 1), (1, -1)]:
+                    nc, nr = ci + dc, ri + dr
+                    if 0 <= nc < 10 and 0 <= nr < 10:
+                        if terrain[(COLS[nc], nr + 1)] == "water":
+                            terrain[(c, r)] = "sand"
+                            break
+
+    # Dark grass clusters in interior
+    for _ in range(6):
+        ci = random.randint(2, 7)
+        ri = random.randint(2, 7)
+        pos = (COLS[ci], ri + 1)
+        if terrain[pos] == "grass":
+            terrain[pos] = "dark_grass"
+            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nc, nr = ci + dc, ri + dr
+                if 0 <= nc < 10 and 0 <= nr < 10:
+                    npos = (COLS[nc], nr + 1)
+                    if terrain[npos] == "grass" and random.random() < 0.5:
+                        terrain[npos] = "dark_grass"
+
+    return terrain
+
+
 def generate_world():
-    """Create a 10x10 world grid. Returns dict keyed by (col_letter, row_number)."""
+    """Create a 10x10 world grid with terrain. Returns dict keyed by (col_letter, row_number)."""
     world = {}
-    cells = [(c, r) for c in COLS for r in ROWS]
-
-    # Capital is always at E5
+    terrain = generate_terrain()
     capital_pos = ("E", 5)
-    reserved = {capital_pos}
 
-    available = [c for c in cells if c not in reserved]
+    sand_positions = {pos for pos, t in terrain.items() if t == "sand"}
+    grass_available = [pos for pos in terrain
+                       if terrain[pos] in ("grass", "dark_grass") and pos != capital_pos]
 
+    # Place ports on sand
+    sand_available = [pos for pos in sand_positions if pos != capital_pos]
+    port_positions = random.sample(sand_available, min(2, len(sand_available))) if sand_available else []
+
+    # Place other specials on grass/dark_grass
     special = []
-    counts = [("forest", 3), ("village", 3), ("cave", 2), ("castle", 2), ("dungeon", 2), ("dragon_lair", 1)]
-    chosen = random.sample(available, sum(n for _, n in counts))
+    counts = [("forest", 3), ("village", 3), ("cave", 2), ("castle", 2),
+              ("dungeon", 2), ("dragon_lair", 1)]
+    total_needed = sum(n for _, n in counts)
+    chosen = random.sample(grass_available, min(total_needed, len(grass_available)))
     idx = 0
     for tile_type, count in counts:
         for _ in range(count):
-            special.append((chosen[idx], tile_type))
-            idx += 1
+            if idx < len(chosen):
+                special.append((chosen[idx], tile_type))
+                idx += 1
 
     special_map = {pos: t for pos, t in special}
     special_map[capital_pos] = "capital"
+    for pos in port_positions:
+        special_map[pos] = "port"
 
     for c in COLS:
         for r in ROWS:
             pos = (c, r)
+            ter = terrain[pos]
+            if ter == "water":
+                world[pos] = {
+                    "type": "water", "terrain": "water",
+                    "visited": False, "merchant_stock": None,
+                    "loot_available": False, "enemies_cleared": True,
+                }
+                continue
+
             tile_type = special_map.get(pos, "plains")
             tile = {
-                "type": tile_type,
-                "visited": False,
-                "merchant_stock": None,
-                "loot_available": True,
-                "enemies_cleared": False,
+                "type": tile_type, "terrain": ter,
+                "visited": False, "merchant_stock": None,
+                "loot_available": True, "enemies_cleared": False,
             }
-            if tile_type == "village":
+            if tile_type in ("village", "port"):
                 tile["merchant_stock"] = generate_merchant_stock()
             if tile_type == "capital":
                 tile["revealed"] = True
                 tile["merchant_stock"] = generate_merchant_stock()
-            elif tile_type != "plains":
+            elif tile_type not in ("plains",):
                 tile["revealed"] = False
             world[pos] = tile
 
@@ -432,41 +576,41 @@ def generate_world():
 
 
 def draw_map(world, player_pos=None):
-    """Render the world map using ASCII symbols with perfect alignment."""
-    # Fixed column width of 4 characters per cell
+    """Render the world map with terrain backgrounds and ASCII symbols."""
     col_w = 4
     print()
 
-    # Header row:  "      A   B   C   D   E   F   G   H   I   J"
     header = "      " + " ".join(c.center(col_w) for c in COLS)
     print(styled(header, C.BOLD, C.CYAN))
 
-    # Separator
     sep_line = "     " + "-" * (len(COLS) * (col_w + 1) - 1)
     print(styled(sep_line, C.DIM))
 
     for r in ROWS:
-        # Row label: " 1 | ", " 2 | ", ..., "10 | "
         row_label = styled(f" {r:>2} ", C.BOLD, C.CYAN) + styled("| ", C.DIM)
         cells_str = []
         for c in COLS:
             pos = (c, r)
             tile = world[pos]
             t = tile["type"]
-            # Hidden location logic
-            if t != "plains" and t != "capital" and not tile.get("revealed", False) and pos != player_pos:
-                cell_str = styled(".".center(col_w), C.DIM)
+            ter = tile.get("terrain", "grass")
+            bg = BG_COLORS.get(ter, "")
+
+            if t == "water":
+                cell_str = bg + C.BOLD + C.WHITE + "~".center(col_w) + C.RESET
+            elif t not in ("plains", "capital") and not tile.get("revealed", False) and pos != player_pos:
+                cell_str = bg + C.DIM + ".".center(col_w) + C.RESET
             else:
                 sym = TILE_SYMBOLS[t]
                 color = TILE_COLORS[t]
-                cell_str = styled(sym.center(col_w), color)
+                cell_str = bg + color + sym.center(col_w) + C.RESET
             cells_str.append(cell_str)
         print(row_label + " ".join(cells_str))
 
-    # Legend
     print()
     legend_parts = []
-    for t_type in ["plains", "forest", "village", "cave", "castle", "dungeon", "capital", "dragon_lair"]:
+    for t_type in ["plains", "forest", "village", "cave", "castle", "dungeon",
+                    "capital", "dragon_lair", "port", "water"]:
         sym = TILE_SYMBOLS[t_type]
         name = TILE_NAMES[t_type]
         color = TILE_COLORS[t_type]
@@ -480,10 +624,10 @@ def draw_map(world, player_pos=None):
 # ---------------------------------------------------------------------------
 
 def find_poi(world, exclude_pos=None):
-    """Find all points of interest (non-plains) on the map."""
+    """Find all points of interest (non-plains, non-water) on the map."""
     pois = []
     for pos, tile in world.items():
-        if tile["type"] != "plains":
+        if tile["type"] not in ("plains", "water"):
             if exclude_pos and pos == exclude_pos:
                 continue
             pois.append((pos, tile["type"]))
@@ -503,6 +647,8 @@ class Player:
     def __init__(self):
         self.hp = 100
         self.max_hp = 100
+        self.mana = 50
+        self.max_mana = 50
         self.base_attack = 3
         self.base_armor = 0
         self.gold = 20
@@ -518,6 +664,11 @@ class Player:
         self.armors = ["cloth_rags"]
         self.consumables = ["small_potion"]
         self.misc = []
+        self.spells = []  # learned spells (max 3)
+
+        # Map
+        self.has_map = False
+        self.locations_revealed = 0  # NPC reveals capped at 2
 
         # Location
         self.pos: tuple[str, int] = ("E", 5)
@@ -537,6 +688,11 @@ class Player:
         a = ARMORS.get(self.armor_equipped, {})
         return self.base_armor + a.get("armor", 0)
 
+    @property
+    def dodge_chance(self):
+        a = ARMORS.get(self.armor_equipped, {})
+        return a.get("dodge", 0)
+
     def weapon_name(self):
         w = WEAPONS.get(self.weapon)
         return w["name"] if w else "Bare Fists"
@@ -549,6 +705,9 @@ class Player:
         self.hp = min(self.max_hp, self.hp + amount)
 
     def take_damage(self, raw_dmg):
+        # Dodge check
+        if random.randint(1, 100) <= self.dodge_chance:
+            return 0  # dodged
         reduced = max(1, raw_dmg - self.armor_value // 2)
         self.hp -= reduced
         return reduced
@@ -562,6 +721,8 @@ class Player:
             self.max_hp += 10
             self.hp = self.max_hp
             self.base_attack += 1
+            self.max_mana += 10
+            self.mana = self.max_mana
             self.xp_to_next = int(self.xp_to_next * 1.5)
             leveled = True
         return leveled
@@ -743,6 +904,8 @@ class Game:
         self.player = Player()
         self.running = True
         self.dragon_lair_pos = next((pos for pos, t in self.world.items() if t["type"] == "dragon_lair"), None)
+        self.action_count = 0
+        self.respawn_interval = 15  # enemies respawn every 15 actions
 
     # -- helpers --
 
@@ -793,12 +956,21 @@ class Game:
             ("stats",            "Show your stats."),
             ("inventory / inv",  "Show your inventory."),
             ("equip {item}",     "Equip a weapon or armor."),
+            ("unequip weapon|armor", "Unequip weapon or armor."),
             ("use {item}",       "Use a consumable item."),
-            ("buy {item}",       "Buy from a merchant (when at merchant)."),
+            ("buy {item}",       "Buy from merchant / mage / warlock / explorer."),
             ("sell {item}",      "Sell to a merchant (when at merchant)."),
+            ("cast {spell}",     "Cast a spell (in combat)."),
             ("fight",            "Fight enemies (in dungeons/caves/forests)."),
             ("search",           "Search for loot (in special locations)."),
+            ("sleep",            "Rest at a tavern (heals HP & mana, 10 gold)."),
+            ("cheat",            "Beta testing: get all items, map, lvl 20."),
             ("quit / exit",      "Quit the game."),
+            ("", ""),
+            ("SHORTCUTS",        "h=help m=map l=look t=talk s=search"),
+            ("",                 "f=fight i=inventory e=equip u=use b=buy q=quit"),
+            ("", ""),
+            ("TIP",              "Type partial item names (e.g. 'sell sm' for Small Potion)."),
         ]
         for cmd, desc in cmds:
             print(f"  {styled(cmd.ljust(20), C.CYAN)} {styled(desc, C.DIM)}")
@@ -822,12 +994,33 @@ class Game:
             if talkable:
                 print()
                 print(styled("  Someone is here. Type 'talk' to speak.", C.YELLOW))
+            if self.player.subloc == "tavern":
+                print(styled("  A room is available. Type 'sleep' to rest (10 gold).", C.YELLOW))
+            # Mage in courtyard
+            if self.player.subloc == "courtyard" and self.player.inside in ("castle", "capital"):
+                print()
+                print(styled("  A mage is here, surrounded by arcane runes.", C.MAGENTA))
+                print(styled("  Type 'buy' to see available spells.", C.MAGENTA))
+            # Warlock in castle tower
+            if self.player.subloc == "tower" and self.player.inside == "castle":
+                print()
+                print(styled("  A warlock lurks in the shadows of the tower.", C.RED))
+                print(styled("  Type 'buy' to see available dark spells.", C.RED))
+            # Explorer at dock
+            if self.player.subloc == "dock" and self.player.inside == "port":
+                print()
+                print(styled("  An explorer sits nearby with maps and charts.", C.CYAN))
+                if not self.player.has_map:
+                    print(styled(f"  Type 'buy map' to buy a full map ({MAP_COST} gold).", C.CYAN))
+                else:
+                    print(styled("  You already own the full map.", C.DIM))
         elif self.player.inside:
             desc_map = {
                 "plains": DESC_PLAINS, "forest": DESC_FOREST,
                 "village": DESC_VILLAGE, "cave": DESC_CAVE,
                 "castle": DESC_CASTLE, "dungeon": DESC_DUNGEON,
                 "capital": DESC_CAPITAL, "dragon_lair": DESC_DRAGON_LAIR,
+                "port": DESC_PORT,
             }
             descs = desc_map.get(self.player.inside, DESC_PLAINS)
             self.wrap_print(random.choice(descs), C.WHITE)
@@ -843,10 +1036,11 @@ class Game:
                 "village": DESC_VILLAGE, "cave": DESC_CAVE,
                 "castle": DESC_CASTLE, "dungeon": DESC_DUNGEON,
                 "capital": DESC_CAPITAL, "dragon_lair": DESC_DRAGON_LAIR,
+                "port": DESC_PORT,
             }
             descs = desc_map.get(tile["type"], DESC_PLAINS)
             self.wrap_print(random.choice(descs), C.WHITE)
-            if tile["type"] != "plains":
+            if tile["type"] not in ("plains", "water"):
                 print()
                 print(styled(f"  You can enter: cd {tile['type']}", C.YELLOW))
 
@@ -925,9 +1119,15 @@ class Game:
         print(styled(f"  [{npc_display}]", C.BOLD, C.YELLOW))
         print()
         self.wrap_print(line, C.WHITE)
-        if poi_pos:
+        if poi_pos and p.locations_revealed < 2:
             self.world[poi_pos]["revealed"] = True
+            p.locations_revealed += 1
+            remaining = 2 - p.locations_revealed
             print(styled("  [A new location has been revealed on your map!]", C.BOLD, C.CYAN))
+            if remaining == 0:
+                print(styled("  [NPCs have no more locations to share. Buy a map from the explorer at a port!]", C.DIM))
+        elif poi_pos:
+            print(styled("  [The NPC has nothing new to reveal. Buy a map from the explorer at a port!]", C.DIM))
         self.print_sep()
         print()
 
@@ -940,13 +1140,23 @@ class Game:
         bar_len = 20
         filled = int(bar_len * hp_pct)
         bar = styled("#" * filled, C.RED) + styled("-" * (bar_len - filled), C.DIM)
+        mana_pct = p.mana / p.max_mana if p.max_mana > 0 else 0
+        mana_filled = int(bar_len * mana_pct)
+        mana_bar = styled("#" * mana_filled, C.BLUE) + styled("-" * (bar_len - mana_filled), C.DIM)
         print(f"  HP:      {p.hp}/{p.max_hp} [{bar}]")
+        print(f"  Mana:    {p.mana}/{p.max_mana} [{mana_bar}]")
         print(f"  Attack:  {styled(str(p.attack), C.RED)}")
-        print(f"  Armor:   {styled(str(p.armor_value), C.BLUE)}")
+        print(f"  Defense: {styled(str(p.armor_value), C.BLUE)}")
+        print(f"  Dodge:   {styled(str(p.dodge_chance) + '%', C.GREEN)}")
         print(f"  Gold:    {styled(str(p.gold), C.YELLOW)}")
         print(f"  Level:   {p.level}  (XP: {p.xp}/{p.xp_to_next})")
         print(f"  Weapon:  {styled(p.weapon_name(), C.CYAN)}")
         print(f"  Armor:   {styled(p.armor_name(), C.CYAN)}")
+        if p.spells:
+            spell_names = ", ".join(SPELLS[s]["name"] for s in p.spells if s in SPELLS)
+            print(f"  Spells:  {styled(spell_names, C.MAGENTA)}")
+        if p.has_map:
+            print(f"  Map:     {styled('Full map unlocked', C.GREEN)}")
         print()
 
     def cmd_inventory(self, _args):
@@ -959,14 +1169,16 @@ class Game:
         def _list_section(title, items, catalog):
             if items:
                 print(f"\n  {styled(title, C.BOLD)}")
-                for key in items:
+                # Group items by key and count duplicates
+                counts = Counter(items)
+                for key, count in counts.items():
                     info = catalog.get(key, {})
                     name = info.get("name", key)
                     extra = ""
                     if "attack" in info:
                         extra = f" (ATK +{info['attack']})"
                     elif "armor" in info:
-                        extra = f" (ARM +{info['armor']})"
+                        extra = f" (DEF +{info['armor']}, Dodge {info.get('dodge', 0)}%)"
                     elif "heal" in info:
                         extra = f" (Heal {info['heal']})"
                     equipped = ""
@@ -974,12 +1186,31 @@ class Game:
                         equipped = styled(" [equipped]", C.GREEN)
                     elif key == p.armor_equipped:
                         equipped = styled(" [equipped]", C.GREEN)
-                    print(f"    {name}{extra}{equipped}")
+                    qty = f" x{count}" if count > 1 else ""
+                    print(f"    {name}{extra}{styled(qty, C.YELLOW)}{equipped}")
 
         _list_section("Weapons", p.weapons, WEAPONS)
         _list_section("Armor", p.armors, ARMORS)
         _list_section("Consumables", p.consumables, CONSUMABLES)
         _list_section("Misc", p.misc, MISC_ITEMS)
+
+        if p.spells:
+            print(f"\n  {styled('Spells', C.BOLD)}")
+            for spell_key in p.spells:
+                info = SPELLS.get(spell_key, {})
+                name = info.get("name", spell_key)
+                mana_cost = info.get("mana", 0)
+                details = []
+                if "damage" in info:
+                    details.append(f"DMG {info['damage']}")
+                if "heal" in info:
+                    details.append(f"Heal {info['heal']}")
+                if "shield" in info:
+                    details.append(f"Shield +{info['shield']}")
+                if "weaken" in info:
+                    details.append(f"Weaken {int(info['weaken']*100)}%")
+                detail_str = ", ".join(details)
+                print(f"    {name} ({detail_str}, {mana_cost} mana)")
         print()
 
     def cmd_cd(self, args):
@@ -1009,7 +1240,7 @@ class Game:
             if target in subs:
                 p.subloc = target
                 self.cmd_look([])
-                if target == "merchant" and self.current_tile()["type"] in ("village", "capital"):
+                if target == "merchant" and self.current_tile()["type"] in ("village", "capital", "port"):
                     self._show_merchant()
                 return
             if target == p.inside:
@@ -1037,6 +1268,10 @@ class Game:
                 return
 
             if col in COLS and row in ROWS:
+                target_tile = self.world[(col, row)]
+                if target_tile["type"] == "water":
+                    print(styled("  You cannot travel across water.", C.BLUE))
+                    return
                 p.inside = None
                 p.subloc = None
                 p.pos = (col, row)
@@ -1061,6 +1296,7 @@ class Game:
                 "forest": DESC_FOREST, "village": DESC_VILLAGE,
                 "cave": DESC_CAVE, "castle": DESC_CASTLE, "dungeon": DESC_DUNGEON,
                 "capital": DESC_CAPITAL, "dragon_lair": DESC_DRAGON_LAIR,
+                "port": DESC_PORT,
             }
             descs = desc_map.get(t, DESC_PLAINS)
             self.wrap_print(random.choice(descs), C.WHITE)
@@ -1072,8 +1308,11 @@ class Game:
             print(styled("  Usage: equip {item_name}", C.RED))
             return
 
-        key = "_".join(args).lower()
         p = self.player
+        # Try resolving with prefix matching
+        key = self._resolve_item_key(args, list(set(p.weapons + p.armors)))
+        if key is None:
+            key = "_".join(args).lower()
 
         if key in WEAPONS and key in p.weapons:
             p.weapon = key
@@ -1084,13 +1323,40 @@ class Game:
         else:
             print(styled(f"  You don't have '{' '.join(args)}' or it cannot be equipped.", C.RED))
 
+    def cmd_unequip(self, args):
+        if not args:
+            print(styled("  Usage: unequip weapon | unequip armor", C.RED))
+            return
+
+        target = args[0].lower()
+        p = self.player
+
+        if target in ("weapon", "w"):
+            if p.weapon is None:
+                print(styled("  You have no weapon equipped.", C.DIM))
+            else:
+                old = p.weapon_name()
+                p.weapon = None
+                print(styled(f"  Unequipped {old}. Fighting with bare fists.", C.YELLOW))
+        elif target in ("armor", "a"):
+            if p.armor_equipped is None:
+                print(styled("  You have no armor equipped.", C.DIM))
+            else:
+                old = p.armor_name()
+                p.armor_equipped = None
+                print(styled(f"  Unequipped {old}. No armor.", C.YELLOW))
+        else:
+            print(styled("  Usage: unequip weapon | unequip armor", C.RED))
+
     def cmd_use(self, args):
         if not args:
             print(styled("  Usage: use {item_name}", C.RED))
             return
 
-        key = "_".join(args).lower()
         p = self.player
+        key = self._resolve_item_key(args, p.consumables)
+        if key is None:
+            key = "_".join(args).lower()
 
         if key in CONSUMABLES and key in p.consumables:
             info = CONSUMABLES[key]
@@ -1121,7 +1387,7 @@ class Game:
             if "attack" in info:
                 extra = f" (ATK +{info['attack']})"
             elif "armor" in info:
-                extra = f" (ARM +{info['armor']})"
+                extra = f" (DEF +{info['armor']}, Dodge {info.get('dodge', 0)}%)"
             elif "heal" in info:
                 extra = f" (Heal {info['heal']})"
             print(f"    {name}{extra}  --  {styled(str(value) + ' gold', C.YELLOW)}")
@@ -1129,18 +1395,156 @@ class Game:
         print(styled("  Use 'buy {item}' to purchase, 'sell {item}' to sell.", C.DIM))
         print()
 
+    def _show_mage_spells(self):
+        """Show spells available from the mage."""
+        p = self.player
+        available = {k: v for k, v in SPELLS.items() if v["source"] == "mage" and k not in p.spells}
+        if not available:
+            print(styled("  The mage has nothing more to teach you.", C.DIM))
+            return
+        print()
+        print(styled("  MAGE'S SPELLS", C.BOLD, C.MAGENTA))
+        print(styled("  -------------", C.DIM))
+        for key, info in available.items():
+            details = []
+            if "damage" in info:
+                details.append(f"DMG {info['damage']}")
+            if "heal" in info:
+                details.append(f"Heal {info['heal']}")
+            if "shield" in info:
+                details.append(f"Shield +{info['shield']}")
+            detail_str = ", ".join(details)
+            print(f"    {info['name']} ({detail_str}, {info['mana']} mana)  --  {styled(str(info['value']) + ' gold', C.YELLOW)}")
+        print(f"\n  Spells known: {len(p.spells)}/3")
+        print(styled("  Use 'buy {spell}' to learn a spell.", C.DIM))
+        print()
+
+    def _show_warlock_spells(self):
+        """Show spells available from the warlock."""
+        p = self.player
+        available = {k: v for k, v in SPELLS.items() if v["source"] == "warlock" and k not in p.spells}
+        if not available:
+            print(styled("  The warlock has nothing more to teach you.", C.DIM))
+            return
+        print()
+        print(styled("  WARLOCK'S DARK SPELLS", C.BOLD, C.RED))
+        print(styled("  --------------------", C.DIM))
+        for key, info in available.items():
+            details = []
+            if "damage" in info:
+                details.append(f"DMG {info['damage']}")
+            if "heal" in info:
+                details.append(f"Heal {info['heal']}")
+            if "weaken" in info:
+                details.append(f"Weaken {int(info['weaken']*100)}%")
+            detail_str = ", ".join(details)
+            print(f"    {info['name']} ({detail_str}, {info['mana']} mana)  --  {styled(str(info['value']) + ' gold', C.YELLOW)}")
+        print(f"\n  Spells known: {len(p.spells)}/3")
+        print(styled("  Use 'buy {spell}' to learn a dark spell.", C.DIM))
+        print()
+
     def cmd_buy(self, args):
+        p = self.player
+
+        # No args: show relevant shop if at a special location
         if not args:
+            if p.subloc == "courtyard" and p.inside in ("castle", "capital"):
+                self._show_mage_spells()
+                return
+            elif p.subloc == "tower" and p.inside == "castle":
+                self._show_warlock_spells()
+                return
+            elif p.subloc == "dock" and p.inside == "port":
+                if p.has_map:
+                    print(styled("  You already own the full map.", C.DIM))
+                else:
+                    print(styled(f"  The explorer sells a full map for {MAP_COST} gold. Type 'buy map'.", C.CYAN))
+                return
+            elif p.subloc == "merchant":
+                self._show_merchant()
+                return
             print(styled("  Usage: buy {item_name}", C.RED))
             return
-        p = self.player
-        if p.subloc != "merchant":
-            print(styled("  You need to be at a merchant to buy items.", C.RED))
+
+        # Buy map from explorer at dock
+        if p.subloc == "dock" and p.inside == "port":
+            target = "_".join(args).lower()
+            if target == "map":
+                if p.has_map:
+                    print(styled("  You already own the full map.", C.DIM))
+                    return
+                if p.gold < MAP_COST:
+                    print(styled(f"  Not enough gold. The map costs {MAP_COST}, you have {p.gold}.", C.RED))
+                    return
+                p.gold -= MAP_COST
+                p.has_map = True
+                for pos, tile in self.world.items():
+                    if tile["type"] not in ("plains", "water"):
+                        tile["revealed"] = True
+                print(styled(f"  Purchased the full map for {MAP_COST} gold! All locations revealed!", C.GREEN, C.BOLD))
+                return
+            else:
+                print(styled("  The explorer only sells maps. Type 'buy map'.", C.RED))
+                return
+
+        # Buy spells from mage in courtyard
+        if p.subloc == "courtyard" and p.inside in ("castle", "capital"):
+            spell_keys = [k for k, v in SPELLS.items() if v["source"] == "mage" and k not in p.spells]
+            key = self._resolve_item_key(args, spell_keys)
+            if key is None:
+                key = "_".join(args).lower()
+            if key not in SPELLS or SPELLS[key]["source"] != "mage":
+                self._show_mage_spells()
+                return
+            if key in p.spells:
+                print(styled(f"  You already know {SPELLS[key]['name']}.", C.DIM))
+                return
+            if len(p.spells) >= 3:
+                print(styled("  You cannot learn more than 3 spells.", C.RED))
+                return
+            cost = SPELLS[key]["value"]
+            if p.gold < cost:
+                print(styled(f"  Not enough gold. You need {cost}, you have {p.gold}.", C.RED))
+                return
+            p.gold -= cost
+            p.spells.append(key)
+            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/3 spells) (Gold: {p.gold})", C.MAGENTA, C.BOLD))
             return
 
-        key = "_".join(args).lower()
+        # Buy spells from warlock in castle tower
+        if p.subloc == "tower" and p.inside == "castle":
+            spell_keys = [k for k, v in SPELLS.items() if v["source"] == "warlock" and k not in p.spells]
+            key = self._resolve_item_key(args, spell_keys)
+            if key is None:
+                key = "_".join(args).lower()
+            if key not in SPELLS or SPELLS[key]["source"] != "warlock":
+                self._show_warlock_spells()
+                return
+            if key in p.spells:
+                print(styled(f"  You already know {SPELLS[key]['name']}.", C.DIM))
+                return
+            if len(p.spells) >= 3:
+                print(styled("  You cannot learn more than 3 spells.", C.RED))
+                return
+            cost = SPELLS[key]["value"]
+            if p.gold < cost:
+                print(styled(f"  Not enough gold. You need {cost}, you have {p.gold}.", C.RED))
+                return
+            p.gold -= cost
+            p.spells.append(key)
+            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/3 spells) (Gold: {p.gold})", C.RED, C.BOLD))
+            return
+
+        # Standard merchant buying
+        if p.subloc != "merchant":
+            print(styled("  You need to be at a merchant, mage, warlock, or explorer.", C.RED))
+            return
+
         tile = self.current_tile()
         stock = tile.get("merchant_stock", [])
+        key = self._resolve_item_key(args, stock)
+        if key is None:
+            key = "_".join(args).lower()
 
         if key not in stock:
             print(styled(f"  The merchant doesn't have '{' '.join(args)}'.", C.RED))
@@ -1166,7 +1570,10 @@ class Game:
             print(styled("  You need to be at a merchant to sell items.", C.RED))
             return
 
-        key = "_".join(args).lower()
+        all_player_items = p.weapons + p.armors + p.consumables + p.misc
+        key = self._resolve_item_key(args, all_player_items)
+        if key is None:
+            key = "_".join(args).lower()
         if not p.has_item(key):
             print(styled(f"  You don't have '{' '.join(args)}'.", C.RED))
             return
@@ -1224,8 +1631,9 @@ class Game:
         print()
 
         while enemy["hp"] > 0 and p.hp > 0:
-            print(styled(f"  Your HP: {p.hp}/{p.max_hp}  |  {enemy['name']} HP: {enemy['hp']}/{enemy['max_hp']}", C.WHITE))
-            print(styled("  [a]ttack  [u]se potion  [f]lee", C.CYAN))
+            print(styled(f"  Your HP: {p.hp}/{p.max_hp}  Mana: {p.mana}/{p.max_mana}  |  {enemy['name']} HP: {enemy['hp']}/{enemy['max_hp']}", C.WHITE))
+            spell_hint = "  [c]ast spell" if p.spells else ""
+            print(styled(f"  [a]ttack  [u]se potion  [f]lee{spell_hint}", C.CYAN))
             try:
                 action = input(styled("  > ", C.BOLD)).strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -1242,7 +1650,25 @@ class Game:
 
                 raw = random.randint(enemy["attack"] // 2, enemy["attack"])
                 taken = p.take_damage(raw)
-                print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
+                if taken == 0:
+                    print(styled(f"  You dodge the {enemy['name']}'s attack!", C.GREEN, C.BOLD))
+                else:
+                    print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
+
+            elif action in ("c", "cast"):
+                if not p.spells:
+                    print(styled("  You don't know any spells!", C.RED))
+                    continue
+                self._cast_spell_in_combat(enemy)
+                if enemy["hp"] <= 0:
+                    break
+                # Enemy counter-attacks after casting
+                raw = random.randint(enemy["attack"] // 2, enemy["attack"])
+                taken = p.take_damage(raw)
+                if taken == 0:
+                    print(styled(f"  You dodge the {enemy['name']}'s attack!", C.GREEN, C.BOLD))
+                else:
+                    print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
 
             elif action in ("u", "use"):
                 potions = [(k, CONSUMABLES[k]) for k in p.consumables if k in CONSUMABLES]
@@ -1258,7 +1684,10 @@ class Game:
 
                 raw = random.randint(enemy["attack"] // 2, enemy["attack"])
                 taken = p.take_damage(raw)
-                print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
+                if taken == 0:
+                    print(styled(f"  You dodge the {enemy['name']}'s attack!", C.GREEN, C.BOLD))
+                else:
+                    print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
 
             elif action in ("f", "flee"):
                 if random.random() < 0.5:
@@ -1269,7 +1698,10 @@ class Game:
                     print(styled("  You fail to escape!", C.RED))
                     raw = random.randint(enemy["attack"] // 2, enemy["attack"])
                     taken = p.take_damage(raw)
-                    print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
+                    if taken == 0:
+                        print(styled(f"  You dodge the {enemy['name']}'s attack!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  The {enemy['name']} hits you for {taken} damage!", C.RED))
             else:
                 print(styled("  Invalid action.", C.DIM))
 
@@ -1322,14 +1754,13 @@ class Game:
             print(styled("  The dragon is already slain. Its bones lie cold.", C.DIM))
             return
 
-        scale = 1 + (p.level - 1) * 0.1
         dragon = {
             "name": "The Ancient Dragon",
-            "hp": int(300 * scale),
-            "max_hp": int(300 * scale),
-            "attack": int(30 * scale),
+            "hp": 350,
+            "max_hp": 350,
+            "attack": 40,
             "gold": (100, 250),
-            "xp": int(500 * scale),
+            "xp": 500,
         }
 
         print()
@@ -1341,8 +1772,9 @@ class Game:
         print()
 
         while dragon["hp"] > 0 and p.hp > 0:
-            print(styled(f"  Your HP: {p.hp}/{p.max_hp}  |  {dragon['name']} HP: {dragon['hp']}/{dragon['max_hp']}", C.WHITE))
-            print(styled("  [a]ttack  [u]se potion  [f]lee", C.CYAN))
+            print(styled(f"  Your HP: {p.hp}/{p.max_hp}  Mana: {p.mana}/{p.max_mana}  |  {dragon['name']} HP: {dragon['hp']}/{dragon['max_hp']}", C.WHITE))
+            spell_hint = "  [c]ast spell" if p.spells else ""
+            print(styled(f"  [a]ttack  [u]se potion  [f]lee{spell_hint}", C.CYAN))
             try:
                 action = input(styled("  > ", C.BOLD)).strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -1361,11 +1793,39 @@ class Game:
                 if random.random() < 0.3:
                     raw = random.randint(dragon["attack"] // 2, dragon["attack"]) * 2
                     taken = p.take_damage(raw)
-                    print(styled(f"  {dragon['name']} unleashes INFERNO BREATH for {taken} damage!", C.RED, C.BOLD))
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s INFERNO BREATH!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} unleashes INFERNO BREATH for {taken} damage!", C.RED, C.BOLD))
                 else:
                     raw = random.randint(dragon["attack"] // 2, dragon["attack"])
                     taken = p.take_damage(raw)
-                    print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s claws!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
+
+            elif action in ("c", "cast"):
+                if not p.spells:
+                    print(styled("  You don't know any spells!", C.RED))
+                    continue
+                self._cast_spell_in_combat(dragon)
+                if dragon["hp"] <= 0:
+                    break
+                if random.random() < 0.3:
+                    raw = random.randint(dragon["attack"] // 2, dragon["attack"]) * 2
+                    taken = p.take_damage(raw)
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s INFERNO BREATH!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} unleashes INFERNO BREATH for {taken} damage!", C.RED, C.BOLD))
+                else:
+                    raw = random.randint(dragon["attack"] // 2, dragon["attack"])
+                    taken = p.take_damage(raw)
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s claws!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
 
             elif action in ("u", "use"):
                 potions = [(k, CONSUMABLES[k]) for k in p.consumables if k in CONSUMABLES]
@@ -1382,11 +1842,17 @@ class Game:
                 if random.random() < 0.3:
                     raw = random.randint(dragon["attack"] // 2, dragon["attack"]) * 2
                     taken = p.take_damage(raw)
-                    print(styled(f"  {dragon['name']} unleashes INFERNO BREATH for {taken} damage!", C.RED, C.BOLD))
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s INFERNO BREATH!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} unleashes INFERNO BREATH for {taken} damage!", C.RED, C.BOLD))
                 else:
                     raw = random.randint(dragon["attack"] // 2, dragon["attack"])
                     taken = p.take_damage(raw)
-                    print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s claws!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
 
             elif action in ("f", "flee"):
                 if random.random() < 0.5:
@@ -1397,7 +1863,10 @@ class Game:
                     print(styled("  The dragon blocks your escape!", C.RED))
                     raw = random.randint(dragon["attack"] // 2, dragon["attack"])
                     taken = p.take_damage(raw)
-                    print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
+                    if taken == 0:
+                        print(styled(f"  You dodge {dragon['name']}'s claws!", C.GREEN, C.BOLD))
+                    else:
+                        print(styled(f"  {dragon['name']} claws you for {taken} damage!", C.RED))
             else:
                 print(styled("  Invalid action.", C.DIM))
 
@@ -1436,6 +1905,64 @@ class Game:
 
     # -- search / loot --
 
+    def _cast_spell_in_combat(self, enemy):
+        """Let the player pick and cast a spell during combat."""
+        p = self.player
+        print(styled("  Your spells:", C.MAGENTA))
+        for i, spell_key in enumerate(p.spells):
+            info = SPELLS[spell_key]
+            details = []
+            if "damage" in info:
+                details.append(f"DMG {info['damage']}")
+            if "heal" in info:
+                details.append(f"Heal {info['heal']}")
+            if "shield" in info:
+                details.append(f"Shield +{info['shield']}")
+            if "weaken" in info:
+                details.append(f"Weaken {int(info['weaken']*100)}%")
+            detail_str = ", ".join(details)
+            print(f"    [{i+1}] {info['name']} ({detail_str}, {info['mana']} mana)")
+        print(styled("  [0] Cancel", C.DIM))
+        try:
+            choice = input(styled("  Spell> ", C.BOLD)).strip()
+        except (EOFError, KeyboardInterrupt):
+            return
+        if choice == "0" or not choice:
+            print(styled("  Cancelled.", C.DIM))
+            return
+        try:
+            idx = int(choice) - 1
+            if idx < 0 or idx >= len(p.spells):
+                raise ValueError
+        except ValueError:
+            print(styled("  Invalid choice.", C.RED))
+            return
+        spell_key = p.spells[idx]
+        info = SPELLS[spell_key]
+        mana_cost = info["mana"]
+        if p.mana < mana_cost:
+            print(styled(f"  Not enough mana! Need {mana_cost}, have {p.mana}.", C.RED))
+            return
+        p.mana -= mana_cost
+        # Apply spell effects
+        if "damage" in info:
+            dmg = info["damage"]
+            enemy["hp"] -= dmg
+            print(styled(f"  You cast {info['name']}! {dmg} damage to {enemy['name']}!", C.MAGENTA, C.BOLD))
+        if "heal" in info:
+            heal_amt = info["heal"]
+            old_hp = p.hp
+            p.heal(heal_amt)
+            print(styled(f"  {info['name']} restores {p.hp - old_hp} HP!", C.GREEN))
+        if "shield" in info:
+            p.base_armor += info["shield"]
+            print(styled(f"  {info['name']} grants +{info['shield']} armor for this battle!", C.BLUE))
+        if "weaken" in info:
+            reduction = int(enemy["attack"] * info["weaken"])
+            enemy["attack"] = max(1, enemy["attack"] - reduction)
+            print(styled(f"  {info['name']} weakens {enemy['name']}! ATK reduced by {reduction}!", C.RED))
+        print(styled(f"  (Mana: {p.mana}/{p.max_mana})", C.BLUE))
+
     def cmd_search(self, _args):
         p = self.player
         tile = self.current_tile()
@@ -1468,6 +1995,47 @@ class Game:
         else:
             print(styled("  You look around but find nothing of interest here.", C.DIM))
 
+    def cmd_sleep(self, _args):
+        p = self.player
+        if p.subloc != "tavern":
+            print(styled("  You need to be in a tavern to sleep.", C.RED))
+            return
+
+        cost = 10
+        if p.gold < cost:
+            print(styled(f"  The barkeep shakes his head. 'Room's {cost} gold. You don't have enough.'", C.RED))
+            return
+
+        p.gold -= cost
+        old_hp = p.hp
+        p.hp = p.max_hp
+        healed = p.hp - old_hp
+        old_mana = p.mana
+        p.mana = p.max_mana
+        mana_restored = p.mana - old_mana
+        xp_gained = random.randint(3, 8)
+        leveled = p.gain_xp(xp_gained)
+
+        # Reset all merchant stocks
+        for pos, tile in self.world.items():
+            if tile.get("merchant_stock") is not None:
+                tile["merchant_stock"] = generate_merchant_stock()
+
+        print()
+        self.print_sep()
+        print(styled("  You rent a room and collapse onto a straw mattress.", C.WHITE))
+        print(styled("  Hours pass. The sounds of the tavern fade into silence.", C.DIM))
+        print()
+        print(styled(f"  Restored {healed} HP. HP: {p.hp}/{p.max_hp}", C.GREEN))
+        print(styled(f"  Restored {mana_restored} Mana. Mana: {p.mana}/{p.max_mana}", C.BLUE))
+        print(styled(f"  Gained {xp_gained} XP. (Dreams of past battles...)", C.CYAN))
+        print(styled(f"  Paid {cost} gold. (Gold: {p.gold})", C.YELLOW))
+        print(styled("  Merchant stocks have been refreshed across the land.", C.DIM))
+        if leveled:
+            print(styled(f"  LEVEL UP! You are now level {p.level}!", C.BOLD, C.CYAN))
+        self.print_sep()
+        print()
+
     def cmd_quit(self, _args):
         print()
         print(styled("  The darkness closes in. Your journey ends here.", C.DIM))
@@ -1475,7 +2043,100 @@ class Game:
         print()
         self.running = False
 
+    def cmd_cheat(self, _args):
+        """Beta testing cheat: get everything."""
+        p = self.player
+        # Level up to 20
+        while p.level < 20:
+            p.level += 1
+            p.max_hp += 10
+            p.base_attack += 1
+            p.max_mana += 10
+        p.hp = p.max_hp
+        p.mana = p.max_mana
+        p.xp = 0
+        p.xp_to_next = int(50 * (1.5 ** 19))
+        # Max gold
+        p.gold = 99999
+        # Full map
+        p.has_map = True
+        for pos, tile in self.world.items():
+            if tile["type"] not in ("plains", "water"):
+                tile["revealed"] = True
+        # All weapons
+        for key in WEAPONS:
+            if key not in p.weapons:
+                p.weapons.append(key)
+        # All armors
+        for key in ARMORS:
+            if key not in p.armors:
+                p.armors.append(key)
+        # All consumables (5 of each)
+        for key in CONSUMABLES:
+            for _ in range(5):
+                p.consumables.append(key)
+        # All misc items
+        for key in MISC_ITEMS:
+            if key not in p.misc:
+                p.misc.append(key)
+        # All spells (max 3, take first 3)
+        all_spell_keys = list(SPELLS.keys())
+        p.spells = all_spell_keys[:3]
+        # Equip best gear
+        p.weapon = "dragon_slayer_blade"
+        p.armor_equipped = "dark_plate"
+        print()
+        self.print_sep()
+        print(styled("  [CHEAT MODE ACTIVATED]", C.BOLD, C.RED))
+        print(styled(f"  Level: {p.level}  |  HP: {p.hp}/{p.max_hp}  |  Mana: {p.mana}/{p.max_mana}", C.YELLOW))
+        print(styled(f"  Gold: {p.gold}  |  ATK: {p.attack}  |  DEF: {p.armor_value}", C.YELLOW))
+        print(styled(f"  All weapons, armors, items, and spells unlocked.", C.GREEN))
+        print(styled(f"  Full map revealed.", C.GREEN))
+        self.print_sep()
+        print()
+
     # -- command dispatch --
+
+    def _resolve_item_key(self, args, catalog_keys):
+        """Resolve a partial item name to a full item key via prefix matching."""
+        if not args:
+            return None
+        partial = "_".join(args).lower()
+        # Combined lookup for names
+        all_lookup = {}
+        all_lookup.update(ALL_ITEMS)
+        all_lookup.update(SPELLS)
+        # Exact match first
+        if partial in catalog_keys:
+            return partial
+        # Prefix match
+        matches = [k for k in catalog_keys if k.startswith(partial)]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            names = [all_lookup.get(k, {}).get("name", k) for k in matches]
+            print(styled(f"  Multiple matches: {', '.join(names)}", C.YELLOW))
+            return None
+        # Substring match as fallback
+        matches = [k for k in catalog_keys if partial in k]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            names = [all_lookup.get(k, {}).get("name", k) for k in matches]
+            print(styled(f"  Multiple matches: {', '.join(names)}", C.YELLOW))
+            return None
+        return None
+
+    def _tick_respawn(self):
+        """Increment action counter and respawn enemies when threshold is reached."""
+        self.action_count += 1
+        if self.action_count >= self.respawn_interval:
+            self.action_count = 0
+            for pos, tile in self.world.items():
+                if tile.get("enemies_cleared"):
+                    tile["enemies_cleared"] = False
+                if not tile.get("loot_available"):
+                    tile["loot_available"] = True
 
     def dispatch(self, raw_input):
         parts = raw_input.strip().split()
@@ -1484,6 +2145,14 @@ class Game:
 
         cmd = parts[0].lower()
         args = parts[1:]
+
+        # Shortcuts
+        shortcuts = {
+            "h": "help", "m": "map", "l": "look", "t": "talk",
+            "s": "search", "f": "fight", "i": "inventory",
+            "e": "equip", "u": "use", "b": "buy", "q": "quit",
+        }
+        cmd = shortcuts.get(cmd, cmd)
 
         commands = {
             "help":      self.cmd_help,
@@ -1495,11 +2164,14 @@ class Game:
             "inv":       self.cmd_inventory,
             "cd":        self.cmd_cd,
             "equip":     self.cmd_equip,
+            "unequip":   self.cmd_unequip,
             "use":       self.cmd_use,
             "buy":       self.cmd_buy,
             "sell":      self.cmd_sell,
             "fight":     self.cmd_fight,
             "search":    self.cmd_search,
+            "sleep":     self.cmd_sleep,
+            "cheat":     self.cmd_cheat,
             "quit":      self.cmd_quit,
             "exit":      self.cmd_quit,
         }
@@ -1507,6 +2179,7 @@ class Game:
         handler = commands.get(cmd)
         if handler:
             handler(args)
+            self._tick_respawn()
         else:
             print(styled(f"  Unknown command: {cmd}. Type 'help' for commands.", C.RED))
 
@@ -1519,12 +2192,13 @@ class Game:
 
         print()
         print(styled(r"""
-   _____ _  _ ___    ___  ___  ___ ___ ___ _____    ___  _   _    _    ___
-  |_   _| || | __|  | __|/ _ \| _ \ __/ __|_   _|  | __|| | | |  | |  / __|
-    | | | __ | _|   | _|| (_) |   / _|\__ \ | |    | _| | |_| |_ | |__\__ \
-    |_| |_||_|___|  |_|  \___/|_|_\___|___/ |_|    |_|   \___/\__||____|___/
+   _____ _  _ ___    ___  ___  ___ ___ ___ _____    ___  ___   ___  _     ___
+  |_   _| || | __|  | __|/ _ \| _ \ __/ __|_   _|  | __|/ _ \ / _ \| |   / __|
+    | | | __ | _|   | _|| (_) |   / _|\__ \ | |    | _|| (_) | (_) | |__ \__ \
+    |_| |_||_|___|  |_|  \___/|_|_\___|___/ |_|    |_|  \___/ \___/|____|___/
         """, C.BOLD, C.RED))
 
+        print(styled("    Version 1.0.2", C.DIM))
         print(styled("    A Dark Medieval Gothic Exploration", C.DIM))
         print()
         print(styled("    You awaken in a grey, desolate land. Fog clings to the earth.", C.WHITE))

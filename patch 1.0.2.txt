@@ -1,0 +1,10 @@
+Patch 1.0.2 — Magie, Esquive & Exploration
+
+Mana : nouveau système de mana (50 de base, +10 par level-up, restauré en dormant à la taverne).
+Sorts : achetez des sorts chez le Mage (courtyard des castles/capital) ou le Warlock (tower des castles). Max 3 sorts. Utilisez "cast" en combat pour les lancer.
+Carte complète : achetez une carte chez l'Explorateur au dock des ports (200 gold) pour révéler tous les lieux d'un coup.
+Limite des PNJs : les PNJs ne révèlent plus que 2 localisations max. Après, il faut acheter la carte.
+Esquive : les armures ont un % d'esquive (ex: Shadow Cloak 20%, Leather Vest 10%). Chaque attaque ennemie peut être esquivée.
+Défense : stat "Defense" remplace "Armor" dans l'affichage.
+Commande cheat : tape "cheat" pour tout débloquer (lvl 20, 99999 gold, tous items/sorts, carte). Pour le beta testing.
+Dragon nerf : le dragon a maintenant 350 PV et 40 ATK fixes (plus de scaling).
