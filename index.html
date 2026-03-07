@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Forest Fools</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M12 8L4 20l8-4v12l6-8 4 8 4-8 6 8V16l8 4L32 8 12 8z' fill='%23c44'/%3E%3Cpath d='M16 28v8c0 8 8 16 16 16s16-8 16-16v-8l-6 8-4-8-4 8-4-8-4 8-4-8-6 8z' fill='%23a33'/%3E%3Ccircle cx='22' cy='20' r='2' fill='%23ff0'/%3E%3Ccircle cx='42' cy='20' r='2' fill='%23ff0'/%3E%3Cpath d='M26 30c2 3 6 4 6 4s4-1 6-4' stroke='%23ff6' stroke-width='1.5' fill='none'/%3E%3Cpath d='M28 34l4 4 4-4' stroke='%23f80' stroke-width='1' fill='none'/%3E%3C/svg%3E">
+<style>
+@font-face {
+  font-family: 'Enchanted Land';
+  src: url('Enchanted%20Land.otf') format('opentype');
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+#term{width:100%;height:100%;display:flex;flex-direction:column;
+  font-family:'Enchanted Land','Courier New',monospace;font-size:22px;color:#aaa}
+#out{flex:1;overflow-y:auto;white-space:pre-wrap;word-break:break-word;padding:8px}
+#in-line{display:none;padding:0 8px 8px;align-items:center}
+#ps1{white-space:pre}
+#cmd{flex:1;background:transparent;border:none;outline:none;color:#aaa;
+  font:inherit;caret-color:#aaa}
+.bold{font-weight:bold}
+.dim{color:#666}
+.red{color:#c44}
+.green{color:#4c4}
+.yellow{color:#cc4}
+.blue{color:#44c}
+.magenta{color:#c4c}
+.cyan{color:#4cc}
+.white{color:#ccc}
+.grey{color:#888}
+.mono{font-family:'Courier New',monospace;font-size:15px}
+</style>
+</head>
+<body>
+<div id="term" onclick="document.getElementById('cmd').focus()">
+  <div id="out"></div>
+  <div id="in-line">
+    <span id="ps1"></span>
+    <input id="cmd" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">
+  </div>
+</div>
+<script>
+// ===================================================================
+// UTILITIES
+// ===================================================================
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function s(text){var cls=Array.prototype.slice.call(arguments,1);var e=esc(text);return cls.length?'<span class="'+cls.join(' ')+'">'+e+'</span>':e}
+function sw(html){var cls=Array.prototype.slice.call(arguments,1);return cls.length?'<span class="'+cls.join(' ')+'">'+html+'</span>':html}
+function center(str,w){var p=w-str.length;if(p<=0)return str;var l=Math.floor(p/2);return ' '.repeat(l)+str+' '.repeat(p-l)}
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function choice(a){return a[Math.floor(Math.random()*a.length)]}
+function sample(arr,k){var c=arr.slice();var r=[];for(var i=0;i<k&&c.length;i++){var j=Math.floor(Math.random()*c.length);r.push(c.splice(j,1)[0])}return r}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+// ===================================================================
+// TERMINAL I/O
+// ===================================================================
+var outEl=document.getElementById('out');
+var inLine=document.getElementById('in-line');
+var ps1El=document.getElementById('ps1');
+var cmdEl=document.getElementById('cmd');
+var inputResolve=null;
+
+function print(html){outEl.innerHTML+=html+'\n';outEl.scrollTop=outEl.scrollHeight}
+function printMono(html){outEl.innerHTML+='<span class="mono">'+html+'</span>\n';outEl.scrollTop=outEl.scrollHeight}
+function clear(){outEl.innerHTML=''}
+
+function waitInput(promptHtml){
+  return new Promise(function(resolve){
+    ps1El.innerHTML=promptHtml||'';
+    cmdEl.value='';
+    inLine.style.display='flex';
+    cmdEl.focus();
+    inputResolve=resolve;
+  });
+}
+
+cmdEl.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(!inputResolve)return;
+    var val=cmdEl.value;
+    print(ps1El.innerHTML+esc(val));
+    cmdEl.value='';
+    inLine.style.display='none';
+    var r=inputResolve;
+    inputResolve=null;
+    r(val);
+  }
+});
+
+// ===================================================================
+// GAME DATA
+// ===================================================================
+var TILE_SYMBOLS={plains:'.',forest:'T',village:'V',cave:'O',castle:'#',dungeon:'X',capital:'K',dragon_lair:'D'};
+var TILE_COLORS={plains:['dim'],forest:['green'],village:['yellow'],cave:['grey'],castle:['magenta'],dungeon:['red'],capital:['bold','yellow'],dragon_lair:['red','bold']};
+var TILE_NAMES={plains:'Plains',forest:'Forest',village:'Village',cave:'Cave',castle:'Castle',dungeon:'Dungeon',capital:'Capital',dragon_lair:'Dragon Lair'};
+
+var WEAPONS={
+  rusty_sword:{name:'Rusty Sword',attack:3,value:5},
+  iron_dagger:{name:'Iron Dagger',attack:5,value:12},
+  iron_sword:{name:'Iron Sword',attack:8,value:25},
+  steel_sword:{name:'Steel Sword',attack:12,value:50},
+  war_hammer:{name:'War Hammer',attack:14,value:65},
+  dark_blade:{name:'Dark Blade',attack:18,value:120},
+  silver_longsword:{name:'Silver Longsword',attack:22,value:200},
+  cursed_greatsword:{name:'Cursed Greatsword',attack:28,value:350},
+  dragon_slayer_blade:{name:'Dragon Slayer Blade',attack:35,value:1000}
+};
+var ARMORS={
+  cloth_rags:{name:'Cloth Rags',armor:1,value:3},
+  leather_vest:{name:'Leather Vest',armor:4,value:15},
+  chainmail:{name:'Chainmail',armor:8,value:45},
+  plate_armor:{name:'Plate Armor',armor:14,value:100},
+  dark_plate:{name:'Dark Plate',armor:20,value:250},
+  shadow_cloak:{name:'Shadow Cloak',armor:10,value:80}
+};
+var CONSUMABLES={
+  small_potion:{name:'Small Potion',heal:25,value:8},
+  medium_potion:{name:'Medium Potion',heal:50,value:20},
+  large_potion:{name:'Large Potion',heal:100,value:45},
+  elixir:{name:'Elixir',heal:200,value:100}
+};
+var MISC_ITEMS={
+  old_key:{name:'Old Key',value:2},
+  skull_amulet:{name:'Skull Amulet',value:30},
+  raven_feather:{name:'Raven Feather',value:1},
+  golden_chalice:{name:'Golden Chalice',value:75},
+  torn_scroll:{name:'Torn Scroll',value:5},
+  dark_gem:{name:'Dark Gem',value:60},
+  iron_ring:{name:'Iron Ring',value:10}
+};
+var ALL_ITEMS={};
+Object.assign(ALL_ITEMS,WEAPONS,ARMORS,CONSUMABLES,MISC_ITEMS);
+
+var ENEMIES=[
+  {name:'Hollow Wraith',hp:30,attack:6,gold:[5,15],xp:15},
+  {name:'Skeletal Soldier',hp:40,attack:8,gold:[8,20],xp:20},
+  {name:'Plague Rat Swarm',hp:20,attack:4,gold:[2,8],xp:8},
+  {name:'Cursed Knight',hp:70,attack:14,gold:[15,40],xp:40},
+  {name:'Tomb Guardian',hp:60,attack:12,gold:[12,30],xp:30},
+  {name:'Shadow Stalker',hp:50,attack:10,gold:[10,25],xp:25},
+  {name:'Undead Priest',hp:45,attack:11,gold:[10,28],xp:28},
+  {name:'Giant Spider',hp:35,attack:7,gold:[4,12],xp:12},
+  {name:'Goblin Scavenger',hp:25,attack:5,gold:[3,10],xp:10},
+  {name:'Dark Sorcerer',hp:55,attack:16,gold:[20,50],xp:45},
+  {name:'Bone Colossus',hp:100,attack:20,gold:[30,70],xp:60}
+];
+
+// ---- Descriptions ----
+var DESC_PLAINS=[
+  "An open stretch of grey, wind-swept land. Dead grass sways beneath a sky heavy with iron clouds. The silence is broken only by the distant cry of a raven.",
+  "A barren field stretches endlessly. The earth is cracked and dry. A lone, withered tree stands against the pale horizon like a skeletal hand reaching for the heavens.",
+  "Flat, featureless moorland rolls in every direction. A thin mist clings to the ground. Somewhere far away, a bell tolls slowly.",
+  "The wind howls across desolate plains. Broken wagon wheels and scattered bones suggest travellers once passed this way. None remain.",
+  "A vast emptiness. The grey sky presses down like a stone lid. You feel watched, though nothing stirs."
+];
+var DESC_FOREST=[
+  "Ancient trees crowd together, their gnarled branches intertwined like the fingers of the damned. No sunlight reaches the forest floor. The air smells of rot and damp earth.",
+  "A dense, lightless wood. Twisted roots break through the soil like veins. Strange fungus glows faintly on the bark. Something moves in the canopy above.",
+  "The forest is silent and suffocating. Moss-covered stones form unnatural patterns among the trees. An old path, nearly consumed by undergrowth, leads deeper into the darkness.",
+  "Black pines rise like cathedral pillars into the mist. The ground is carpeted with dead needles. A cold wind carries whispers you cannot quite understand."
+];
+var DESC_VILLAGE=[
+  "A small hamlet of crooked timber houses huddles behind a low stone wall. Smoke rises thinly from a few chimneys. The villagers eye you with suspicion and something like fear.",
+  "Ramshackle buildings lean against one another as if exhausted. A chapel bell hangs cracked and silent. Mud lanes wind between shuttered windows and bolted doors.",
+  "A grim settlement. The houses are dark, their thatched roofs sagging. A gallows stands in the village square, its rope swaying in the wind. A dog barks somewhere unseen."
+];
+var DESC_CAVE=[
+  "A yawning hole in the rock face exhales cold, stale air. The darkness inside is absolute. Water drips in a slow, maddening rhythm from somewhere deep within.",
+  "The cave mouth is framed by jagged stone teeth. Scratches and old bloodstains mark the entrance. The smell of damp stone and something worse drifts outward.",
+  "A narrow fissure in a cliff wall opens into blackness. The wind moans as it passes over the entrance. Old torches, long extinguished, are jammed into cracks in the rock."
+];
+var DESC_CASTLE=[
+  "A fortress of black stone rises against the sky, its towers broken and overgrown with ivy. The portcullis hangs askew. Crows circle the battlements in endless, silent orbits.",
+  "The castle looms above you, vast and lightless. Arrow slits stare down like hollow eyes. The drawbridge is down but the courtyard beyond is choked with fog and rubble.",
+  "Once a seat of power, this castle is now a ruin. Shattered banners hang from the walls. The great hall's roof has collapsed, and moonlight falls on a floor of dust and bones."
+];
+var DESC_DUNGEON=[
+  "Iron-bound doors open onto steps that descend into darkness. The walls are slick with moisture and something darker. Chains rattle faintly below, though no wind stirs them.",
+  "A dungeon entrance, half-hidden by fallen masonry. The air rising from below is foul and warm. Scratches on the walls form words in a language you do not recognise."
+];
+var DESC_CAPITAL=[
+  "The great capital city rises before you, its towers of pale stone gleaming against the iron sky. Banners bearing the royal sigil snap in the wind above the massive gatehouse. The streets within teem with merchants, soldiers, and the desperate alike.",
+  "Walls of ancient stone encircle the capital, worn but unbroken by centuries of war. The city within is a maze of cobbled streets and tall buildings. At its heart, the royal palace looms above everything."
+];
+var DESC_DRAGON_LAIR=[
+  "A vast cavern carved into the mountain by claws and fire. The walls are scorched black, and the stench of sulphur is overwhelming. Bones of the unfortunate litter the ground.",
+  "Heat radiates from deep within the lair. The ceiling is lost in smoke and shadow. A low, rhythmic sound echoes through the tunnels -- breathing. Something ancient breathes here."
+];
+var DESC_MAP={plains:DESC_PLAINS,forest:DESC_FOREST,village:DESC_VILLAGE,cave:DESC_CAVE,castle:DESC_CASTLE,dungeon:DESC_DUNGEON,capital:DESC_CAPITAL,dragon_lair:DESC_DRAGON_LAIR};
+
+var DESC_SUBLOCS={
+  merchant:["A cramped shop crammed with dusty wares. The merchant watches you from behind a counter stacked with oddities. Candles gutter in the draught.","Shelves of potions, blades, and curiosities line the walls. The merchant nods slowly, their face half-hidden in shadow."],
+  blacksmith:["The forge glows red in the gloom. The blacksmith, a massive figure scarred by years of fire, hammers at a blade without looking up.","Heat and the smell of molten metal fill the smithy. Weapons line the walls. The blacksmith grunts a greeting."],
+  tavern:["A low-ceilinged room thick with smoke and the smell of sour ale. A handful of patrons sit in silence. The barkeep polishes a cracked tankard.","The tavern is dark and crowded. A fire sputters in the hearth. Someone plays a slow, mournful tune on a lute in the corner."],
+  chapel:["A small stone chapel. The altar is bare. Candles burn low before a faceless saint. The air is cold and still, as if prayer itself has frozen here.","Broken pews face a crumbling altar. Stained glass, mostly shattered, casts dim coloured light on the flagstones. It smells of old incense and dust."],
+  square:["The village square is empty. A well stands at its centre, its bucket missing. The cobblestones are cracked and weeds push through.","A muddy open space surrounded by leaning buildings. A noticeboard displays faded warnings. A crow perches on the gallows post."],
+  entrance:["The entrance is narrow and dark. Old torches, long dead, line the walls. The stone underfoot is worn smooth by countless feet -- or claws."],
+  corridor:["A long, low corridor stretches into blackness. The walls are damp. Your footsteps echo strangely, as if something echoes back a moment too late."],
+  crypt:["Stone sarcophagi line the walls, their lids cracked or displaced. Bones spill onto the floor. The air is thick with the sweet stench of decay."],
+  altar:["A black stone altar stands at the centre of a vaulted chamber. Dark stains run down its sides. Symbols are carved into the floor around it."],
+  treasure_room:["A heavy door opens onto a small chamber. Chests, some broken, some locked, line the walls. Gold coins are scattered among dust and cobwebs."],
+  courtyard:["A wide courtyard choked with fog. Broken statues and overturned carts litter the ground. The keep looms ahead, dark and silent."],
+  great_hall:["A vast hall with a collapsed roof. Moonlight falls on a long table still set with rusted plates. A throne sits at the far end, draped in cobwebs."],
+  tower:["A spiral staircase winds upward through darkness. The stone steps are narrow and uneven. Wind howls through arrow slits."],
+  dungeon_cells:["Iron-barred cells line both sides of a narrow passage. Most are empty. In one, a skeleton still hangs from its manacles."],
+  throne_room:["A grand chamber, cold and dark. The throne is carved from black stone. Tattered banners hang from the walls, bearing sigils no living man remembers."],
+  clearing:["A small clearing in the dense wood. Pale light filters through the canopy. Mushrooms grow in a perfect circle on the forest floor."],
+  ruins:["Crumbling stone walls peek through the undergrowth. An old foundation, long overgrown. Something was here once. Something that was deliberately destroyed."],
+  stream:["A dark stream winds through the trees. The water is cold and clear but tastes faintly of iron. Moss-covered stones line its banks."],
+  barracks:["Rows of bunks line the walls of the barracks. Soldiers sharpen blades and mend armour in grim silence. The smell of iron and sweat hangs heavy in the air."],
+  tunnel:["A wide tunnel carved by something enormous. Claw marks score the walls from floor to ceiling. Embers smoulder in cracks in the rock."],
+  hoard:["A vast chamber piled high with gold, jewels, and the armour of fallen heroes. The wealth of a kingdom lies here, guarded by centuries of draconic greed."],
+  nest:["The heart of the lair. Massive bones and scorched stone form a crude nest. The heat is almost unbearable. Then you see it -- the dragon, coiled and vast, one enormous eye sliding open to regard you."]
+};
+
+var SUBLOCS={
+  village:['merchant','blacksmith','tavern','chapel','square'],
+  cave:['entrance','corridor','crypt','altar','treasure_room'],
+  dungeon:['entrance','corridor','crypt','altar','treasure_room'],
+  castle:['courtyard','great_hall','tower','dungeon_cells','throne_room'],
+  forest:['clearing','ruins','stream'],
+  capital:['courtyard','great_hall','throne_room','barracks','merchant'],
+  dragon_lair:['entrance','tunnel','hoard','nest']
+};
+
+// ---- NPC Dialogues ----
+var NPC_DIALOGUES={
+  tavern:{
+    barkeep:[
+      "\"Ale?\" The barkeep slides a cracked tankard toward you. \"A traveller, eh. You look half-dead already.\" He leans closer. \"Word is there's a {loc_type} at {coord}. Folk who went there... didn't come back.\"",
+      "\"Keep your voice down.\" The barkeep glances around. \"A merchant came through last week, raving about a {loc_type} near {coord}. Said he saw things crawling in the dark. I say stay away.\"",
+      "\"You want advice? Head to {coord}. There's a {loc_type} there. Dangerous, aye, but those who survive come back richer than kings. Or they don't come back at all.\""
+    ],
+    drunk:[
+      "A man slumped over the bar grabs your arm. \"I seen it... the {loc_type}... at {coord}...\" He shivers. \"The dead walk there. They walk and they wait.\"",
+      "\"Hic... you look strong enough...\" A drunk patron waves vaguely. \"Go to {coord}. The {loc_type}... there's treasure. Gold. I'd go myself but... hic... my legs don't work so good.\""
+    ],
+    hooded_figure:[
+      "A hooded figure in the corner beckons. \"Seek the {loc_type} at {coord}. What you find there will change you. For better or worse.\" They vanish into shadow before you can reply."
+    ]
+  },
+  blacksmith:{
+    blacksmith:[
+      "The blacksmith doesn't look up from his anvil. \"You'll need better steel if you're heading to {coord}. There's a {loc_type} there. The things inside... they don't die easy.\"",
+      "\"I forged a blade for a knight once. He was bound for the {loc_type} at {coord}.\" The blacksmith pauses. \"The blade came back. He didn't.\"",
+      "\"Word of advice, stranger. The {loc_type} at {coord} -- don't go at night. Not that it matters. It's always night down there.\""
+    ]
+  },
+  chapel:{
+    priest:[
+      "The priest turns slowly. His eyes are milky and unfocused. \"The darkness gathers at {coord}. A {loc_type} festers there like a wound in the earth. Pray before you go. It may be your last chance.\"",
+      "\"Child, the dead do not rest at {coord}. The {loc_type} there is cursed. I have blessed many who went to face it. I have buried more.\"",
+      "\"I hear confessions from soldiers who returned from {coord}. The {loc_type}... it changed them. They speak of altars and bones and things that should not live.\""
+    ]
+  },
+  square:{
+    old_woman:[
+      "An old woman sits by the well, muttering. She looks up as you approach. \"The crows fly toward {coord}. Where crows gather, death follows. There's a {loc_type} there. Mark my words.\"",
+      "\"You're not from here.\" The old woman clutches a dead raven to her chest. \"Go to {coord} if you want answers. The {loc_type} holds secrets. But secrets have teeth.\""
+    ],
+    guard:[
+      "A guard leans against the gallows post. \"We lost three men at {coord} last month. {loc_type}. Whatever's in there, it's getting bolder. Could use someone fool enough to go in.\""
+    ]
+  },
+  merchant:{
+    merchant:[
+      "\"Ah, a customer.\" The merchant smiles thinly. \"If you're heading to the {loc_type} at {coord}, you'll want potions. Lots of potions. The things down there don't bargain.\"",
+      "\"I trade with every village in these lands. The one near {coord}? They won't go near the {loc_type} anymore. Bad for business, but good for yours -- less competition for whatever's inside.\""
+    ]
+  }
+};
+
+var NPC_DIALOGUES_WILD={
+  clearing:{hermit:["A gaunt figure crouches by a fire of green flame. \"You seek purpose? Go to {coord}. The {loc_type} there calls to those who listen. I heard it once. I will not hear it again.\""]},
+  ruins:{ghost:["A pale shimmer in the air. A voice, thin as wind: \"I fell at {coord}. The {loc_type}... it took everything. Avenge me, or join me.\""]},
+  courtyard:{dying_knight:["A knight slumps against a broken pillar, bleeding. \"The {loc_type} at {coord}... we tried to clear it. Too many of them.\" He coughs blood. \"Finish what we started.\""]},
+  entrance:{survivor:["A figure stumbles out of the darkness, wild-eyed. \"Don't... don't go deeper.\" They grip your shoulder. \"But if you want real treasure, the {loc_type} at {coord} is worse. And richer.\""]}
+};
+
+// ===================================================================
+// WORLD GENERATION
+// ===================================================================
+var COLS='ABCDEFGHIJ';
+
+function generateMerchantStock(){
+  var stock=[];
+  var ck=Object.keys(CONSUMABLES),wk=Object.keys(WEAPONS),ak=Object.keys(ARMORS);
+  sample(ck,Math.min(3,ck.length)).forEach(function(k){stock.push(k)});
+  sample(wk,randInt(1,3)).forEach(function(k){stock.push(k)});
+  if(Math.random()<0.6)stock.push(choice(ak));
+  return stock;
+}
+
+function generateWorld(){
+  var world={};
+  var cells=[];
+  for(var ci=0;ci<COLS.length;ci++)for(var r=1;r<=10;r++)cells.push(COLS[ci]+r);
+  var capitalPos='E5';
+  var available=cells.filter(function(c){return c!==capitalPos});
+  var counts=[['forest',3],['village',3],['cave',2],['castle',2],['dungeon',2],['dragon_lair',1]];
+  var total=0;counts.forEach(function(c){total+=c[1]});
+  var chosen=sample(available,total);
+  var specialMap={};var idx=0;
+  counts.forEach(function(pair){for(var i=0;i<pair[1];i++){specialMap[chosen[idx]]=pair[0];idx++}});
+  specialMap[capitalPos]='capital';
+  for(var ci=0;ci<COLS.length;ci++){
+    for(var r=1;r<=10;r++){
+      var pos=COLS[ci]+r;
+      var tileType=specialMap[pos]||'plains';
+      var tile={type:tileType,visited:false,merchant_stock:null,loot_available:true,enemies_cleared:false,revealed:false};
+      if(tileType==='village')tile.merchant_stock=generateMerchantStock();
+      if(tileType==='capital'){tile.revealed=true;tile.merchant_stock=generateMerchantStock()}
+      world[pos]=tile;
+    }
+  }
+  return world;
+}
+
+function drawMap(world,playerPos){
+  var colW=4;
+  printMono('');
+  var hdr='      '+COLS.split('').map(function(c){return s(center(c,colW),'bold','cyan')}).join(' ');
+  printMono(hdr);
+  printMono(s('     '+'-'.repeat(COLS.length*(colW+1)-1),'dim'));
+  for(var r=1;r<=10;r++){
+    var label=s(' '+String(r).padStart(2)+' ','bold','cyan')+s('| ','dim');
+    var cells=[];
+    for(var ci=0;ci<COLS.length;ci++){
+      var c=COLS[ci],pos=c+r,tile=world[pos],t=tile.type;
+      if(t!=='plains'&&t!=='capital'&&!tile.revealed&&pos!==playerPos){
+        cells.push(s(center('.',colW),'dim'));
+      }else{
+        cells.push(s(center(TILE_SYMBOLS[t],colW),TILE_COLORS[t].join(' ')));
+      }
+    }
+    printMono(label+cells.join(' '));
+  }
+  printMono('');
+  var legend=[];
+  ['plains','forest','village','cave','castle','dungeon','capital','dragon_lair'].forEach(function(t){
+    legend.push(s(TILE_SYMBOLS[t],TILE_COLORS[t].join(' '))+s('='+TILE_NAMES[t],'dim'));
+  });
+  printMono('     '+legend.join('  '));
+  print('');
+}
+
+function findPoi(world,excludePos){
+  var pois=[];
+  for(var pos in world){if(world[pos].type!=='plains'){if(excludePos&&pos===excludePos)continue;pois.push([pos,world[pos].type])}}
+  return pois;
+}
+
+// ===================================================================
+// PLAYER
+// ===================================================================
+function Player(){
+  this.hp=100;this.max_hp=100;this.base_attack=3;this.base_armor=0;
+  this.gold=20;this.level=1;this.xp=0;this.xp_to_next=50;
+  this.weapon='rusty_sword';this.armor_equipped='cloth_rags';
+  this.weapons=['rusty_sword'];this.armors=['cloth_rags'];
+  this.consumables=['small_potion'];this.misc=[];
+  this.pos='E5';this.inside=null;this.subloc=null;
+  this.dragon_quest=null;
+}
+Player.prototype.getAttack=function(){var w=WEAPONS[this.weapon];return this.base_attack+(w?w.attack:0)};
+Player.prototype.getArmor=function(){var a=ARMORS[this.armor_equipped];return this.base_armor+(a?a.armor:0)};
+Player.prototype.weaponName=function(){var w=WEAPONS[this.weapon];return w?w.name:'Bare Fists'};
+Player.prototype.armorName=function(){var a=ARMORS[this.armor_equipped];return a?a.name:'None'};
+Player.prototype.heal=function(amt){this.hp=Math.min(this.max_hp,this.hp+amt)};
+Player.prototype.takeDamage=function(raw){var r=Math.max(1,raw-Math.floor(this.getArmor()/2));this.hp-=r;return r};
+Player.prototype.gainXp=function(amt){
+  this.xp+=amt;var leveled=false;
+  while(this.xp>=this.xp_to_next){this.xp-=this.xp_to_next;this.level++;this.max_hp+=10;this.hp=this.max_hp;this.base_attack++;this.xp_to_next=Math.floor(this.xp_to_next*1.5);leveled=true}
+  return leveled;
+};
+Player.prototype.hasItem=function(k){return this.weapons.indexOf(k)>=0||this.armors.indexOf(k)>=0||this.consumables.indexOf(k)>=0||this.misc.indexOf(k)>=0};
+Player.prototype.addItem=function(k){if(WEAPONS[k])this.weapons.push(k);else if(ARMORS[k])this.armors.push(k);else if(CONSUMABLES[k])this.consumables.push(k);else if(MISC_ITEMS[k])this.misc.push(k)};
+Player.prototype.removeItem=function(k){
+  var lists=[this.weapons,this.armors,this.consumables,this.misc];
+  for(var i=0;i<lists.length;i++){var idx=lists[i].indexOf(k);if(idx>=0){lists[i].splice(idx,1);return true}}return false;
+};
+
+// ===================================================================
+// GAME ENGINE
+// ===================================================================
+function Game(){
+  this.world=generateWorld();
+  this.player=new Player();
+  this.running=true;
+  this.dragonLairPos=null;
+  for(var pos in this.world){if(this.world[pos].type==='dragon_lair'){this.dragonLairPos=pos;break}}
+}
+
+Game.prototype.tile=function(){return this.world[this.player.pos]};
+Game.prototype.printSep=function(){print(s('='.repeat(60),'dim'))};
+Game.prototype.wrapPrint=function(html){
+  var cls=Array.prototype.slice.call(arguments,1);
+  print(sw('  '+html,cls.join(' ')));
+};
+Game.prototype.locLabel=function(){
+  var p=this.player,parts=[p.pos];
+  if(p.inside)parts.push(p.inside);if(p.subloc)parts.push(p.subloc);
+  return parts.join(' > ');
+};
+Game.prototype.pickPoi=function(){
+  var pois=findPoi(this.world,this.player.pos).filter(function(p){return p[1]!=='dragon_lair'});
+  if(!pois.length)return[null,null,null];
+  var pick=choice(pois);return[pick[0],pick[0],pick[1]];
+};
+
+// ---- HELP ----
+Game.prototype.cmdHelp=function(){
+  print('');
+  print(s('  COMMANDS','bold','yellow'));
+  print(s('  --------','dim'));
+  var cmds=[
+    ['help','Show this help.'],['map','Display the world map.'],
+    ['cd {cell}','Travel to a map cell.  e.g. cd B4'],['cd {location}','Enter a location.      e.g. cd village'],
+    ['cd {subloc}','Enter a sub-location.  e.g. cd tavern'],['cd ..','Go back / leave current location.'],
+    ['look','Describe the current location.'],['talk','Talk to someone here.'],
+    ['stats','Show your stats.'],['inventory / inv','Show your inventory.'],
+    ['equip {item}','Equip a weapon or armor.'],['use {item}','Use a consumable item.'],
+    ['buy {item}','Buy from a merchant (when at merchant).'],['sell {item}','Sell to a merchant (when at merchant).'],
+    ['fight','Fight enemies (in dungeons/caves/forests).'],['search','Search for loot (in special locations).'],
+    ['quit / exit','Quit the game.']
+  ];
+  cmds.forEach(function(c){print('  '+s(c[0].padEnd(20),'cyan')+' '+s(c[1],'dim'))});
+  print('');
+};
+
+// ---- MAP ----
+Game.prototype.cmdMap=function(){drawMap(this.world,this.player.pos)};
+
+// ---- LOOK ----
+Game.prototype.cmdLook=function(){
+  var tile=this.tile(),p=this.player;
+  print('');this.printSep();
+  if(p.subloc){
+    var descs=DESC_SUBLOCS[p.subloc]||['You see nothing remarkable.'];
+    this.wrapPrint(esc(choice(descs)),'white');
+    var talkable={};
+    Object.assign(talkable,NPC_DIALOGUES[p.subloc]||{},NPC_DIALOGUES_WILD[p.subloc]||{});
+    if(Object.keys(talkable).length){print('');print(s("  Someone is here. Type 'talk' to speak.",'yellow'))}
+  }else if(p.inside){
+    var descs=(DESC_MAP[p.inside]||DESC_PLAINS);
+    this.wrapPrint(esc(choice(descs)),'white');
+    var subs=SUBLOCS[p.inside]||[];
+    if(subs.length){print('');print(s('  You can visit:','yellow'));subs.forEach(function(sub){print(s('    cd '+sub,'cyan'))})}
+  }else{
+    var descs=(DESC_MAP[tile.type]||DESC_PLAINS);
+    this.wrapPrint(esc(choice(descs)),'white');
+    if(tile.type!=='plains'){print('');print(s('  You can enter: cd '+tile.type,'yellow'))}
+  }
+  this.printSep();print('');
+};
+
+// ---- TALK ----
+Game.prototype.cmdTalk=function(){
+  var p=this.player,subloc=p.subloc,self=this;
+  // King
+  if(p.inside==='capital'&&p.subloc==='throne_room'){
+    print('');this.printSep();
+    print(s('  [The King]','bold','yellow'));print('');
+    if(p.level<5){
+      this.wrapPrint(esc('"You are brave to seek audience, but you are not yet ready. Return when you have proven yourself worthy. (Reach level 5)"'),'white');
+    }else if(p.dragon_quest===null){
+      var dl=this.dragonLairPos||'unknown';
+      this.wrapPrint('"The realm is dying. An ancient dragon has awakened and terrorises the land from its lair at '+s(dl,'bold','cyan')+'. You must go there and slay the beast. The fate of the kingdom rests upon your shoulders."','white');
+      p.dragon_quest='given';
+      if(this.dragonLairPos){this.world[this.dragonLairPos].revealed=true;print(s('  [A new location has been revealed on your map!]','bold','cyan'))}
+    }else if(p.dragon_quest==='given'){
+      var dl=this.dragonLairPos||'unknown';
+      this.wrapPrint('"The dragon still lives! Go to '+s(dl,'bold','cyan')+' and slay the beast!"','white');
+    }else if(p.dragon_quest==='completed'){
+      this.wrapPrint(esc('"You have saved the kingdom! You shall be remembered as a legend!"'),'white');
+    }
+    this.printSep();print('');return;
+  }
+  if(!subloc){
+    print(s(p.inside?'  There is no one to talk to here. Try entering a specific place.':'  There is no one to talk to in the open.','dim'));
+    return;
+  }
+  var allNpcs={};
+  Object.assign(allNpcs,NPC_DIALOGUES[subloc]||{},NPC_DIALOGUES_WILD[subloc]||{});
+  if(!Object.keys(allNpcs).length){print(s('  There is no one here willing to speak.','dim'));return}
+  var npcName=choice(Object.keys(allNpcs));
+  var template=choice(allNpcs[npcName]);
+  var poiData=this.pickPoi();
+  var line;
+  if(poiData[1]&&poiData[2]){
+    line=esc(template).replace(/\{coord\}/g,s(poiData[1],'bold','cyan')).replace(/\{loc_type\}/g,s(poiData[2],'bold','yellow'));
+  }else{
+    line=esc(template.replace(/{coord}/g,'the far reaches').replace(/{loc_type}/g,'dark place'));
+  }
+  var npcDisplay=npcName.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+  print('');this.printSep();
+  print(s('  ['+npcDisplay+']','bold','yellow'));print('');
+  this.wrapPrint(line,'white');
+  if(poiData[0]){this.world[poiData[0]].revealed=true;print(s('  [A new location has been revealed on your map!]','bold','cyan'))}
+  this.printSep();print('');
+};
+
+// ---- STATS ----
+Game.prototype.cmdStats=function(){
+  var p=this.player;
+  print('');print(s('  CHARACTER','bold','yellow'));print(s('  ---------','dim'));
+  var pct=p.hp/p.max_hp,barLen=20,filled=Math.floor(barLen*pct);
+  var bar=s('#'.repeat(filled),'red')+s('-'.repeat(barLen-filled),'dim');
+  print('  HP:      '+p.hp+'/'+p.max_hp+' ['+bar+']');
+  print('  Attack:  '+s(String(p.getAttack()),'red'));
+  print('  Armor:   '+s(String(p.getArmor()),'blue'));
+  print('  Gold:    '+s(String(p.gold),'yellow'));
+  print('  Level:   '+p.level+'  (XP: '+p.xp+'/'+p.xp_to_next+')');
+  print('  Weapon:  '+s(p.weaponName(),'cyan'));
+  print('  Armor:   '+s(p.armorName(),'cyan'));
+  print('');
+};
+
+// ---- INVENTORY ----
+Game.prototype.cmdInventory=function(){
+  var p=this.player;
+  print('');print(s('  INVENTORY','bold','yellow'));print(s('  ---------','dim'));
+  print('  Gold: '+s(String(p.gold),'yellow'));
+  function sec(title,items,catalog){
+    if(!items.length)return;
+    print('');print('  '+s(title,'bold'));
+    items.forEach(function(key){
+      var info=catalog[key]||{};var name=info.name||key;var extra='';
+      if(info.attack!==undefined)extra=' (ATK +'+info.attack+')';
+      else if(info.armor!==undefined)extra=' (ARM +'+info.armor+')';
+      else if(info.heal!==undefined)extra=' (Heal '+info.heal+')';
+      var eq='';
+      if(key===p.weapon)eq=s(' [equipped]','green');
+      else if(key===p.armor_equipped)eq=s(' [equipped]','green');
+      print('    '+esc(name+extra)+eq);
+    });
+  }
+  sec('Weapons',p.weapons,WEAPONS);
+  sec('Armor',p.armors,ARMORS);
+  sec('Consumables',p.consumables,CONSUMABLES);
+  sec('Misc',p.misc,MISC_ITEMS);
+  print('');
+};
+
+// ---- CD ----
+Game.prototype.cmdCd=function(args){
+  if(!args.length){print(s('  Usage: cd {cell|location|subloc|..}','red'));return}
+  var target=args[0].toLowerCase(),p=this.player;
+  if(target==='..'){
+    if(p.subloc){p.subloc=null;print(s('  You return to the '+p.inside+'.','yellow'));this.cmdLook()}
+    else if(p.inside){p.inside=null;print(s('  You step outside at '+p.pos+'.','yellow'))}
+    else print(s('  You are already on the world map.','dim'));
+    return;
+  }
+  if(p.inside){
+    var subs=SUBLOCS[p.inside]||[];
+    if(subs.indexOf(target)>=0){
+      p.subloc=target;this.cmdLook();
+      if(target==='merchant'&&(this.tile().type==='village'||this.tile().type==='capital'))this.showMerchant();
+      return;
+    }
+    if(target===p.inside){p.subloc=null;this.cmdLook();return}
+  }
+  var tile=this.tile();
+  if(target===tile.type&&target!=='plains'&&!p.inside){
+    p.inside=target;p.subloc=null;tile.visited=true;this.cmdLook();return;
+  }
+  var cell=args[0].toUpperCase();
+  if(cell.length>=2){
+    var col=cell[0],row=parseInt(cell.substring(1));
+    if(isNaN(row)){print(s('  Unknown destination: '+esc(args[0]),'red'));return}
+    if(COLS.indexOf(col)>=0&&row>=1&&row<=10){
+      p.inside=null;p.subloc=null;p.pos=col+row;
+      var nt=this.tile();nt.visited=true;
+      print('');print(s('  You travel to '+p.pos+'...','yellow'));
+      this.describeArrival(nt);return;
+    }else{print(s('  Invalid cell: '+esc(cell)+'. Use A-J and 1-10.','red'));return}
+  }
+  print(s('  Unknown destination: '+esc(args[0]),'red'));
+};
+Game.prototype.describeArrival=function(tile){
+  var t=tile.type;
+  if(t==='plains'){this.wrapPrint(esc(choice(DESC_PLAINS)),'dim')}
+  else{
+    this.wrapPrint(esc(choice(DESC_MAP[t]||DESC_PLAINS)),'white');
+    print(s('\n  There is a '+t+" here. Use 'cd "+t+"' to enter.",'yellow'));
+  }
+  print('');
+};
+
+// ---- EQUIP ----
+Game.prototype.cmdEquip=function(args){
+  if(!args.length){print(s('  Usage: equip {item_name}','red'));return}
+  var key=args.join('_').toLowerCase(),p=this.player;
+  if(WEAPONS[key]&&p.weapons.indexOf(key)>=0){p.weapon=key;print(s('  Equipped '+WEAPONS[key].name+'.','green'))}
+  else if(ARMORS[key]&&p.armors.indexOf(key)>=0){p.armor_equipped=key;print(s('  Equipped '+ARMORS[key].name+'.','green'))}
+  else print(s("  You don't have '"+esc(args.join(' '))+"' or it cannot be equipped.",'red'));
+};
+
+// ---- USE ----
+Game.prototype.cmdUse=function(args){
+  if(!args.length){print(s('  Usage: use {item_name}','red'));return}
+  var key=args.join('_').toLowerCase(),p=this.player;
+  if(CONSUMABLES[key]&&p.consumables.indexOf(key)>=0){
+    var info=CONSUMABLES[key],old=p.hp;p.heal(info.heal);var healed=p.hp-old;
+    p.consumables.splice(p.consumables.indexOf(key),1);
+    print(s('  Used '+info.name+'. Restored '+healed+' HP. (HP: '+p.hp+'/'+p.max_hp+')','green'));
+  }else print(s("  You don't have '"+esc(args.join(' '))+"' or it cannot be used.",'red'));
+};
+
+// ---- MERCHANT ----
+Game.prototype.showMerchant=function(){
+  var stock=this.tile().merchant_stock||[];
+  if(!stock.length){print(s('  The merchant has nothing left to sell.','dim'));return}
+  print('');print(s("  MERCHANT'S WARES",'bold','yellow'));print(s('  ----------------','dim'));
+  stock.forEach(function(key){
+    var info=ALL_ITEMS[key]||{};var name=info.name||key;var val=info.value||0;var extra='';
+    if(info.attack!==undefined)extra=' (ATK +'+info.attack+')';
+    else if(info.armor!==undefined)extra=' (ARM +'+info.armor+')';
+    else if(info.heal!==undefined)extra=' (Heal '+info.heal+')';
+    print('    '+esc(name+extra)+'  --  '+s(val+' gold','yellow'));
+  });
+  print('');print(s("  Use 'buy {item}' to purchase, 'sell {item}' to sell.",'dim'));print('');
+};
+
+// ---- BUY ----
+Game.prototype.cmdBuy=function(args){
+  if(!args.length){print(s('  Usage: buy {item_name}','red'));return}
+  var p=this.player;
+  if(p.subloc!=='merchant'){print(s('  You need to be at a merchant to buy items.','red'));return}
+  var key=args.join('_').toLowerCase(),stock=this.tile().merchant_stock||[];
+  if(stock.indexOf(key)<0){print(s("  The merchant doesn't have '"+esc(args.join(' '))+"'.",'red'));return}
+  var info=ALL_ITEMS[key]||{},cost=info.value||0;
+  if(p.gold<cost){print(s('  Not enough gold. You need '+cost+', you have '+p.gold+'.','red'));return}
+  p.gold-=cost;p.addItem(key);stock.splice(stock.indexOf(key),1);
+  print(s('  Purchased '+info.name+' for '+cost+' gold. (Gold: '+p.gold+')','green'));
+};
+
+// ---- SELL ----
+Game.prototype.cmdSell=function(args){
+  if(!args.length){print(s('  Usage: sell {item_name}','red'));return}
+  var p=this.player;
+  if(p.subloc!=='merchant'){print(s('  You need to be at a merchant to sell items.','red'));return}
+  var key=args.join('_').toLowerCase();
+  if(!p.hasItem(key)){print(s("  You don't have '"+esc(args.join(' '))+"'.",'red'));return}
+  if(key===p.weapon){print(s('  Unequip your weapon first (equip a different one).','red'));return}
+  if(key===p.armor_equipped){print(s('  Unequip your armor first (equip a different one).','red'));return}
+  var info=ALL_ITEMS[key]||{},sell=Math.max(1,Math.floor((info.value||1)/2));
+  p.removeItem(key);p.gold+=sell;
+  print(s('  Sold '+(info.name||key)+' for '+sell+' gold. (Gold: '+p.gold+')','green'));
+};
+
+// ---- FIGHT ----
+Game.prototype.cmdFight=async function(args){
+  var p=this.player,tile=this.tile();
+  if((p.inside==='dragon_lair'||tile.type==='dragon_lair')&&p.subloc==='nest'){await this.fightDragon();return}
+  var fightable=['dungeon','cave','forest','castle'];
+  var loc=p.inside||tile.type;
+  if(fightable.indexOf(loc)<0){print(s('  There is nothing to fight here.','dim'));return}
+  if(tile.enemies_cleared){print(s('  This area has been cleared of enemies. (For now...)','dim'));return}
+  var tmpl=choice(ENEMIES),scale=1+(p.level-1)*0.15;
+  var enemy={name:tmpl.name,hp:Math.floor(tmpl.hp*scale),max_hp:Math.floor(tmpl.hp*scale),attack:Math.floor(tmpl.attack*scale),gold:tmpl.gold,xp:Math.floor(tmpl.xp*scale)};
+  print('');this.printSep();
+  print(s('  A '+enemy.name+' emerges from the shadows!','red','bold'));
+  print(s('  HP: '+enemy.hp+'  ATK: '+enemy.attack,'red'));
+  this.printSep();print('');
+  while(enemy.hp>0&&p.hp>0){
+    print(s('  Your HP: '+p.hp+'/'+p.max_hp+'  |  '+enemy.name+' HP: '+enemy.hp+'/'+enemy.max_hp,'white'));
+    print(s('  [a]ttack  [u]se potion  [f]lee','cyan'));
+    var action=(await waitInput(s('  > ','bold'))).trim().toLowerCase();
+    if(action==='a'||action==='attack'){
+      var dmg=randInt(Math.floor(p.getAttack()/2),p.getAttack());enemy.hp-=dmg;
+      print(s('  You strike the '+enemy.name+' for '+dmg+' damage!','yellow'));
+      if(enemy.hp<=0)break;
+      var raw=randInt(Math.floor(enemy.attack/2),enemy.attack);var taken=p.takeDamage(raw);
+      print(s('  The '+enemy.name+' hits you for '+taken+' damage!','red'));
+    }else if(action==='u'||action==='use'){
+      var potions=[];p.consumables.forEach(function(k){if(CONSUMABLES[k])potions.push([k,CONSUMABLES[k]])});
+      if(potions.length){
+        potions.sort(function(a,b){return a[1].heal-b[1].heal});
+        var pk=potions[0][0],pi=potions[0][1],oh=p.hp;p.heal(pi.heal);
+        p.consumables.splice(p.consumables.indexOf(pk),1);
+        print(s('  Used '+pi.name+'. Restored '+(p.hp-oh)+' HP.','green'));
+      }else print(s('  No potions available!','red'));
+      var raw=randInt(Math.floor(enemy.attack/2),enemy.attack);var taken=p.takeDamage(raw);
+      print(s('  The '+enemy.name+' hits you for '+taken+' damage!','red'));
+    }else if(action==='f'||action==='flee'){
+      if(Math.random()<0.5){print(s('  You flee from battle!','yellow'));print('');return}
+      else{
+        print(s('  You fail to escape!','red'));
+        var raw=randInt(Math.floor(enemy.attack/2),enemy.attack);var taken=p.takeDamage(raw);
+        print(s('  The '+enemy.name+' hits you for '+taken+' damage!','red'));
+      }
+    }else print(s('  Invalid action.','dim'));
+    print('');
+  }
+  if(p.hp<=0){
+    print('');this.printSep();
+    print(s('  YOU HAVE FALLEN.','red','bold'));print(s('  Darkness takes you...','dim'));
+    this.printSep();
+    p.hp=Math.floor(p.max_hp/2);var gl=Math.floor(p.gold/3);p.gold-=gl;
+    p.pos='E5';p.inside=null;p.subloc=null;
+    print(s('  You awaken at '+p.pos+', weakened. Lost '+gl+' gold.','yellow'));print('');
+  }else{
+    var gg=randInt(enemy.gold[0],enemy.gold[1]);p.gold+=gg;
+    print('');this.printSep();
+    print(s('  The '+enemy.name+' is defeated!','green','bold'));
+    print(s('  Gained '+gg+' gold and '+enemy.xp+' XP.','yellow'));
+    var leveled=p.gainXp(enemy.xp);
+    if(leveled){print(s('  LEVEL UP! You are now level '+p.level+'!','bold','cyan'));print(s('  Max HP: '+p.max_hp+'  Base ATK: '+p.base_attack,'cyan'))}
+    if(Math.random()<0.3){
+      var lootPool=Object.keys(CONSUMABLES).concat(Object.keys(MISC_ITEMS));
+      if(Math.random()<0.15)lootPool=lootPool.concat(Object.keys(WEAPONS),Object.keys(ARMORS));
+      var drop=choice(lootPool);p.addItem(drop);
+      print(s('  Found: '+ALL_ITEMS[drop].name+'!','green'));
+    }
+    this.printSep();print('');
+    if(Math.random()<0.4)tile.enemies_cleared=true;
+  }
+};
+
+// ---- DRAGON BOSS ----
+Game.prototype.fightDragon=async function(){
+  var p=this.player;
+  if(p.dragon_quest==='completed'){print(s('  The dragon is already slain. Its bones lie cold.','dim'));return}
+  var scale=1+(p.level-1)*0.1;
+  var dragon={name:'The Ancient Dragon',hp:Math.floor(300*scale),max_hp:Math.floor(300*scale),attack:Math.floor(30*scale),gold:[100,250],xp:Math.floor(500*scale)};
+  print('');this.printSep();
+  print(s('  THE ANCIENT DRAGON RISES!','red','bold'));
+  print(s("  The ground shakes. Fire erupts from the beast's maw.",'red'));
+  print(s('  HP: '+dragon.hp+'  ATK: '+dragon.attack,'red'));
+  this.printSep();print('');
+  while(dragon.hp>0&&p.hp>0){
+    print(s('  Your HP: '+p.hp+'/'+p.max_hp+'  |  '+dragon.name+' HP: '+dragon.hp+'/'+dragon.max_hp,'white'));
+    print(s('  [a]ttack  [u]se potion  [f]lee','cyan'));
+    var action=(await waitInput(s('  > ','bold'))).trim().toLowerCase();
+    if(action==='a'||action==='attack'){
+      var dmg=randInt(Math.floor(p.getAttack()/2),p.getAttack());dragon.hp-=dmg;
+      print(s('  You strike '+dragon.name+' for '+dmg+' damage!','yellow'));
+      if(dragon.hp<=0)break;
+      if(Math.random()<0.3){
+        var raw=randInt(Math.floor(dragon.attack/2),dragon.attack)*2;var taken=p.takeDamage(raw);
+        print(s('  '+dragon.name+' unleashes INFERNO BREATH for '+taken+' damage!','red','bold'));
+      }else{
+        var raw=randInt(Math.floor(dragon.attack/2),dragon.attack);var taken=p.takeDamage(raw);
+        print(s('  '+dragon.name+' claws you for '+taken+' damage!','red'));
+      }
+    }else if(action==='u'||action==='use'){
+      var potions=[];p.consumables.forEach(function(k){if(CONSUMABLES[k])potions.push([k,CONSUMABLES[k]])});
+      if(potions.length){
+        potions.sort(function(a,b){return a[1].heal-b[1].heal});
+        var pk=potions[0][0],pi=potions[0][1],oh=p.hp;p.heal(pi.heal);
+        p.consumables.splice(p.consumables.indexOf(pk),1);
+        print(s('  Used '+pi.name+'. Restored '+(p.hp-oh)+' HP.','green'));
+      }else print(s('  No potions available!','red'));
+      if(Math.random()<0.3){
+        var raw=randInt(Math.floor(dragon.attack/2),dragon.attack)*2;var taken=p.takeDamage(raw);
+        print(s('  '+dragon.name+' unleashes INFERNO BREATH for '+taken+' damage!','red','bold'));
+      }else{
+        var raw=randInt(Math.floor(dragon.attack/2),dragon.attack);var taken=p.takeDamage(raw);
+        print(s('  '+dragon.name+' claws you for '+taken+' damage!','red'));
+      }
+    }else if(action==='f'||action==='flee'){
+      if(Math.random()<0.5){print(s('  You flee from the dragon!','yellow'));print('');return}
+      else{
+        print(s('  The dragon blocks your escape!','red'));
+        var raw=randInt(Math.floor(dragon.attack/2),dragon.attack);var taken=p.takeDamage(raw);
+        print(s('  '+dragon.name+' claws you for '+taken+' damage!','red'));
+      }
+    }else print(s('  Invalid action.','dim'));
+    print('');
+  }
+  if(p.hp<=0){
+    print('');this.printSep();
+    print(s('  THE DRAGON HAS SLAIN YOU.','red','bold'));print(s('  Darkness takes you...','dim'));
+    this.printSep();
+    p.hp=Math.floor(p.max_hp/2);var gl=Math.floor(p.gold/3);p.gold-=gl;
+    p.pos='E5';p.inside=null;p.subloc=null;
+    print(s('  You awaken at '+p.pos+', weakened. Lost '+gl+' gold.','yellow'));print('');
+  }else{
+    var gg=randInt(dragon.gold[0],dragon.gold[1]);p.gold+=gg;
+    p.dragon_quest='completed';p.weapons.push('dragon_slayer_blade');
+    print('');this.printSep();
+    print(s('  THE ANCIENT DRAGON IS SLAIN!','green','bold'));
+    print(s('  Gained '+gg+' gold and '+dragon.xp+' XP.','yellow'));
+    print(s('  You claim the Dragon Slayer Blade from the hoard!','bold','cyan'));
+    var leveled=p.gainXp(dragon.xp);
+    if(leveled){print(s('  LEVEL UP! You are now level '+p.level+'!','bold','cyan'));print(s('  Max HP: '+p.max_hp+'  Base ATK: '+p.base_attack,'cyan'))}
+    this.printSep();print('');
+  }
+};
+
+// ---- SEARCH ----
+Game.prototype.cmdSearch=function(){
+  var p=this.player,tile=this.tile();
+  if(!p.inside){print(s('  Nothing to search here in the open.','dim'));return}
+  if(!tile.loot_available){print(s("  You've already searched this place thoroughly. Nothing remains.",'dim'));return}
+  var searchable=['treasure_room','crypt','altar','ruins','clearing','throne_room','great_hall','tower','dungeon_cells','hoard'];
+  if(p.subloc&&searchable.indexOf(p.subloc)>=0){
+    var fg=randInt(5,30+p.level*5);p.gold+=fg;
+    print(s('  You search carefully... Found '+fg+' gold!','yellow'));
+    if(Math.random()<0.5){
+      var lp=Object.keys(CONSUMABLES).concat(Object.keys(MISC_ITEMS));
+      if(Math.random()<0.2)lp=lp.concat(Object.keys(WEAPONS),Object.keys(ARMORS));
+      var ik=choice(lp);p.addItem(ik);
+      print(s('  Found: '+ALL_ITEMS[ik].name+'!','green'));
+    }
+    tile.loot_available=false;
+  }else print(s('  You look around but find nothing of interest here.','dim'));
+};
+
+// ---- QUIT ----
+Game.prototype.cmdQuit=function(){
+  print('');print(s('  The darkness closes in. Your journey ends here.','dim'));
+  print(s('  Farewell, wanderer.','bold'));print('');
+  this.running=false;
+};
+
+// ---- DISPATCH ----
+Game.prototype.dispatch=async function(raw){
+  var parts=raw.trim().split(/\s+/);if(!parts.length||!parts[0])return;
+  var cmd=parts[0].toLowerCase(),args=parts.slice(1);
+  var handlers={
+    help:'cmdHelp',map:'cmdMap',look:'cmdLook',talk:'cmdTalk',
+    stats:'cmdStats',inventory:'cmdInventory',inv:'cmdInventory',
+    cd:'cmdCd',equip:'cmdEquip',use:'cmdUse',
+    buy:'cmdBuy',sell:'cmdSell',fight:'cmdFight',
+    search:'cmdSearch',quit:'cmdQuit',exit:'cmdQuit'
+  };
+  var h=handlers[cmd];
+  if(h){await this[h](args)}
+  else print(s("  Unknown command: "+esc(cmd)+". Type 'help' for commands.",'red'));
+};
+
+// ---- MAIN LOOP ----
+Game.prototype.run=async function(){
+  await showIntro();
+  clear();
+  var titleArt=[
+    " _____ _  _ ___   ___ ___  ___ ___ ___ _____   ___ ___   ___  _    ___",
+    "|_   _| || | __| | __/ _ \\| _ \\ __/ __|_   _| | __/ _ \\ / _ \\| |  / __|",
+    "  | | | __ | _|  | _| (_) |   / _|\\__ \\ | |   | _| (_) | (_) | |__|\\__ \\",
+    "  |_| |_||_|___| |_| \\___/|_|_\\___|___/ |_|   |_| \\___/ \\___/|____|___/"
+  ];
+  print('');
+  titleArt.forEach(function(l){printMono(s(l,'bold','red'))});
+  print('');
+  print(s('    A Dark Medieval Gothic Exploration','dim'));
+  print('');
+  print(s('    You awaken in a grey, desolate land. Fog clings to the earth.','white'));
+  print(s('    The sky is iron. Somewhere, a bell tolls.','white'));
+  print(s("    Type 'help' for commands. Type 'map' to see the world.",'dim'));
+  print('');this.printSep();print('');
+  while(this.running){
+    var loc=this.locLabel();
+    var prompt=s('  ['+loc+']','cyan')+s(' > ','bold');
+    var raw=await waitInput(prompt);
+    await this.dispatch(raw);
+    if(this.player.hp<=0){
+      this.player.hp=Math.floor(this.player.max_hp/2);
+      var gl=Math.floor(this.player.gold/3);this.player.gold-=gl;
+      this.player.pos='E5';this.player.inside=null;this.player.subloc=null;
+    }
+  }
+};
+
+// ===================================================================
+// INTRO SEQUENCE
+// ===================================================================
+var DRAGON_ART=[
+  "              ______________",
+  "        ,===:'.,            `-._",
+  "             `:.`---.__         `-._",
+  "               `:.     `--.         `.",
+  "                 \\.        `.         `.",
+  "         (,,(,    \\.         `.   ____,-`.,",
+  "      (,'     `/   \\.   ,--.___`.'",
+  "  ,  ,'  ,--.  `,   \\.;'         `",
+  "   `{D, {    \\  :    \\;",
+  "     V,,'    /  /    //",
+  "     j;;    /  ,' ,-//.    ,---.      ,",
+  "     \\;'   /  ,' /  _  \\  /  _  \\   ,'/",
+  "            \\   `'  / \\  `'  / \\  `.' /",
+  "             `.___,'   `.__,'   `.__,'"
+];
+var SWORD_ART=[
+    "",
+    "           />________________________________",
+    "[########[]_________________________________/",
+    "           \\>"
+];
+
+async function showIntro(){
+  clear();
+  var lines1=[
+    [s('',''),0],
+    [s('  In an age of shadow and ruin...','dim','white'),1200],
+    [s('  The realm has fallen to darkness.','dim','white'),1000],
+    [s('  Ancient evils stir in forgotten places.','white'),1000],
+    [s('  A dragon of terrible power has awakened.','red'),1200]
+  ];
+  for(var i=0;i<lines1.length;i++){print(lines1[i][0]);await sleep(lines1[i][1])}
+  print('');
+  for(var i=0;i<DRAGON_ART.length;i++){printMono(s(DRAGON_ART[i],'red'));await sleep(50)}
+  await sleep(500);
+  var lines2=[
+    [s('',''),0],
+    [s('  Its shadow stretches across the dying land.','red'),1000],
+    [s('',''),0],
+    [s('  But one soul remains...','yellow'),1500],
+    [s('  A lone wanderer. Scarred. Determined. Unyielding.','yellow'),1200],
+    [s('',''),0],
+    [s('  You.','bold','white'),2000]
+  ];
+  for(var i=0;i<lines2.length;i++){print(lines2[i][0]);await sleep(lines2[i][1])}
+  for(var i=0;i<SWORD_ART.length;i++){printMono(s(SWORD_ART[i],'yellow'));await sleep(60)}
+  var lines3=[
+    [s('',''),0],
+    [s('  The King awaits at the capital.','dim'),800],
+    [s('  The quest will find you.','dim'),2000]
+  ];
+  for(var i=0;i<lines3.length;i++){print(lines3[i][0]);await sleep(lines3[i][1])}
+  print('');
+  await waitInput(s('  Press Enter to begin your journey...','bold','yellow'));
+}
+
+// ===================================================================
+// START
+// ===================================================================
+(async function(){
+  var game=new Game();
+  await game.run();
+})();
+</script>
+</body>
+</html>
