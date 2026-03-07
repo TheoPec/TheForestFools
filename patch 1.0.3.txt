@@ -1,0 +1,5 @@
+Patch 1.0.3 — New Icon & Branding
+
+New favicon and logo for the game.
+Executable now uses the new icon.
+Website favicon updated to match.
