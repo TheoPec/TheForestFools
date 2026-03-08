@@ -1,0 +1,34 @@
+Patch 1.0.4 — Zone Enemies, Level Gating & Castle Treasure
+
+Zone-based enemies:
+- Enemies are now specific to each zone type, with increasing difficulty:
+  * Forest (level 1+): Giant Rat, Wild Crow, Plague Rat Swarm, Feral Boar,
+    Giant Spider, Goblin Scavenger, Venomous Snake.
+  * Cave (level 3+): Cave Wolf, Brown Bear, Cave Bat Swarm, Rock Troll,
+    Shadow Stalker, Undead Miner.
+  * Castle (level 6+): Living Armor, Haunted Knight, Hollow Wraith,
+    Cursed Sentinel, Spectral Guard, Gargoyle.
+  * Dungeon (level 9+): Cursed Knight, Tomb Guardian, Dark Sorcerer,
+    Bone Colossus, Undead Priest, Abyssal Demon.
+- Each zone's enemies still scale with player level on top of their base stats.
+
+NPC level gating:
+- NPCs now only hint about locations the player is strong enough to handle.
+  Forests are mentioned from level 1, caves from level 3, castles from
+  level 6, and dungeons from level 9.
+- When there are harder zones the player can't access yet, NPCs say:
+  "I know of darker places... but you haven't the stature for them."
+  with the required level shown.
+- NPC POI assignments refresh when the player reaches a new zone tier,
+  so new locations become available as the player levels up.
+
+Old Key — Castle Treasure:
+- Castles now have a treasure_room sub-location.
+- The treasure_room contains a locked iron-bound chest that requires an
+  Old Key to open.
+- Opening the chest gives generous loot: 80-200 gold, a powerful weapon
+  or armor (Steel Sword, War Hammer, Dark Blade, Plate Armor, Dark Plate
+  or Silver Longsword), and a bonus consumable.
+- The Old Key is consumed after use (crumbles to dust).
+- Each castle's chest can only be opened once.
+- If the player has no Old Key, a message tells them they need one.

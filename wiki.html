@@ -361,7 +361,7 @@
 
   <section class="intro" aria-label="Introduction wiki">
     <p class="intro-line">dark fantasy rpg played in a terminal</p>
-    <p class="intro-line">10x10 world, hidden locations and random encounters</p>
+    <p class="intro-line">10x10 world, hidden locations and zone-based encounters</p>
     <p class="intro-line">main objective: take the king's quest and slay the ancient dragon</p>
   </section>
 
@@ -420,7 +420,7 @@
       <article class="block">
         <h3>Subcategory: Miscellaneous Items</h3>
         <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
-        <div class="table-row"><strong>Old Key</strong><span>2 gold</span><span>1 gold</span><span class="table-note">-</span></div>
+        <div class="table-row"><strong>Old Key</strong><span>2 gold</span><span>1 gold</span><span class="table-note">Opens locked chest in castle treasure_room (consumed on use)</span></div>
         <div class="table-row"><strong>Skull Amulet</strong><span>30 gold</span><span>15 gold</span><span class="table-note">-</span></div>
         <div class="table-row"><strong>Raven Feather</strong><span>1 gold</span><span>1 gold</span><span class="table-note">-</span></div>
         <div class="table-row"><strong>Golden Chalice</strong><span>75 gold</span><span>37 gold</span><span class="table-note">-</span></div>
@@ -437,18 +437,48 @@
     <h2 class="section-title">Category: Enemies</h2>
     <div class="section-grid two">
       <article class="block">
-        <h3>Subcategory: Standard Bestiary</h3>
-        <div class="catalog"><strong>Hollow Wraith</strong><p>30 HP | ATK 6 | gold 5-15 | XP 15</p></div>
-        <div class="catalog"><strong>Skeletal Soldier</strong><p>40 HP | ATK 8 | gold 8-20 | XP 20</p></div>
+        <h3>Subcategory: Forest (level 1+)</h3>
+        <div class="catalog"><strong>Giant Rat</strong><p>15 HP | ATK 3 | gold 2-6 | XP 6</p></div>
+        <div class="catalog"><strong>Wild Crow</strong><p>12 HP | ATK 2 | gold 1-4 | XP 4</p></div>
         <div class="catalog"><strong>Plague Rat Swarm</strong><p>20 HP | ATK 4 | gold 2-8 | XP 8</p></div>
-        <div class="catalog"><strong>Cursed Knight</strong><p>70 HP | ATK 14 | gold 15-40 | XP 40</p></div>
-        <div class="catalog"><strong>Tomb Guardian</strong><p>60 HP | ATK 12 | gold 12-30 | XP 30</p></div>
-        <div class="catalog"><strong>Shadow Stalker</strong><p>50 HP | ATK 10 | gold 10-25 | XP 25</p></div>
-        <div class="catalog"><strong>Undead Priest</strong><p>45 HP | ATK 11 | gold 10-28 | XP 28</p></div>
-        <div class="catalog"><strong>Giant Spider</strong><p>35 HP | ATK 7 | gold 4-12 | XP 12</p></div>
-        <div class="catalog"><strong>Goblin Scavenger</strong><p>25 HP | ATK 5 | gold 3-10 | XP 10</p></div>
-        <div class="catalog"><strong>Dark Sorcerer</strong><p>55 HP | ATK 16 | gold 20-50 | XP 45</p></div>
-        <div class="catalog"><strong>Bone Colossus</strong><p>100 HP | ATK 20 | gold 30-70 | XP 60</p></div>
+        <div class="catalog"><strong>Feral Boar</strong><p>25 HP | ATK 5 | gold 3-8 | XP 10</p></div>
+        <div class="catalog"><strong>Giant Spider</strong><p>22 HP | ATK 4 | gold 2-7 | XP 7</p></div>
+        <div class="catalog"><strong>Goblin Scavenger</strong><p>18 HP | ATK 3 | gold 2-6 | XP 6</p></div>
+        <div class="catalog"><strong>Venomous Snake</strong><p>14 HP | ATK 5 | gold 2-5 | XP 5</p></div>
+        <p class="muted">zone tier 1 — easy creatures found in forests</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Cave (level 3+)</h3>
+        <div class="catalog"><strong>Cave Wolf</strong><p>35 HP | ATK 7 | gold 5-15 | XP 15</p></div>
+        <div class="catalog"><strong>Brown Bear</strong><p>50 HP | ATK 9 | gold 8-20 | XP 20</p></div>
+        <div class="catalog"><strong>Cave Bat Swarm</strong><p>25 HP | ATK 6 | gold 4-12 | XP 12</p></div>
+        <div class="catalog"><strong>Rock Troll</strong><p>60 HP | ATK 10 | gold 10-25 | XP 22</p></div>
+        <div class="catalog"><strong>Shadow Stalker</strong><p>40 HP | ATK 8 | gold 6-18 | XP 18</p></div>
+        <div class="catalog"><strong>Undead Miner</strong><p>30 HP | ATK 7 | gold 5-15 | XP 14</p></div>
+        <p class="muted">zone tier 2 — dangerous predators lurking in caves</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Castle (level 6+)</h3>
+        <div class="catalog"><strong>Living Armor</strong><p>60 HP | ATK 12 | gold 12-30 | XP 30</p></div>
+        <div class="catalog"><strong>Haunted Knight</strong><p>70 HP | ATK 14 | gold 15-35 | XP 35</p></div>
+        <div class="catalog"><strong>Hollow Wraith</strong><p>50 HP | ATK 11 | gold 10-28 | XP 28</p></div>
+        <div class="catalog"><strong>Cursed Sentinel</strong><p>65 HP | ATK 13 | gold 12-32 | XP 32</p></div>
+        <div class="catalog"><strong>Spectral Guard</strong><p>55 HP | ATK 12 | gold 10-28 | XP 28</p></div>
+        <div class="catalog"><strong>Gargoyle</strong><p>75 HP | ATK 15 | gold 15-40 | XP 38</p></div>
+        <p class="muted">zone tier 3 — animated armors and spectral defenders of ruined fortresses</p>
+      </article>
+
+      <article class="block">
+        <h3>Subcategory: Dungeon (level 9+)</h3>
+        <div class="catalog"><strong>Cursed Knight</strong><p>80 HP | ATK 16 | gold 18-45 | XP 45</p></div>
+        <div class="catalog"><strong>Tomb Guardian</strong><p>90 HP | ATK 18 | gold 20-50 | XP 50</p></div>
+        <div class="catalog"><strong>Dark Sorcerer</strong><p>70 HP | ATK 20 | gold 25-60 | XP 55</p></div>
+        <div class="catalog"><strong>Bone Colossus</strong><p>120 HP | ATK 22 | gold 30-70 | XP 65</p></div>
+        <div class="catalog"><strong>Undead Priest</strong><p>65 HP | ATK 17 | gold 18-45 | XP 45</p></div>
+        <div class="catalog"><strong>Abyssal Demon</strong><p>100 HP | ATK 24 | gold 30-80 | XP 70</p></div>
+        <p class="muted">zone tier 4 — the most powerful abominations in the depths</p>
       </article>
 
       <article class="block">
@@ -577,6 +607,7 @@
           <li>tower</li>
           <li>dungeon_cells</li>
           <li>throne_room</li>
+          <li>treasure_room — locked chest requiring an Old Key (80-200 gold + powerful gear)</li>
         </ul>
         <p class="muted">atmosphere: broken towers, crows, rubble, dusty throne room.</p>
       </article>
@@ -642,7 +673,7 @@
           <li>corridor : low and damp corridor</li>
           <li>crypt : open sarcophagi and smell of decay</li>
           <li>altar : black altar and engraved symbols</li>
-          <li>treasure_room : chests, dust and cobwebs</li>
+          <li>treasure_room : chests, dust and cobwebs (in castles: locked chest requiring Old Key)</li>
           <li>courtyard : courtyard drowned in fog</li>
           <li>great_hall : great hall collapsed under the moon</li>
           <li>tower : spiral staircase and icy wind</li>
@@ -721,7 +752,7 @@
         <div class="catalog"><strong>Explorer</strong><p>port &gt; dock | sells the complete map for 200 gold (reveals all locations)</p></div>
         <div class="catalog"><strong>Mage</strong><p>castle/capital &gt; courtyard | sells spells</p></div>
         <div class="catalog"><strong>Warlock</strong><p>castle &gt; tower | sells spells</p></div>
-        <p class="muted">NPCs reveal a maximum of 2 locations. After that, buy the map from the Explorer.</p>
+        <p class="muted">NPCs only hint about zones matching the player's level (forest lvl 1+, cave lvl 3+, castle lvl 6+, dungeon lvl 9+). If harder zones exist, the NPC says "you haven't the stature for them."</p>
       </article>
     </div>
     <p class="section-back"><a href="#top">back to top</a></p>
@@ -757,7 +788,8 @@
       <article class="block">
         <h3>Subcategory: Combat</h3>
         <ul>
-          <li>combat zones: dungeon, cave, forest, castle</li>
+          <li>combat zones: dungeon, cave, forest, castle — each with its own enemy pool scaled by difficulty</li>
+          <li>zone difficulty: forest (easy) → cave (medium) → castle (hard) → dungeon (very hard)</li>
           <li>actions: attack, cast (spell), use potion, flee</li>
           <li>damage received is reduced by defense via raw damage - defense // 2</li>
           <li>dodge: each enemy attack can be dodged based on armor dodge % (e.g. Shadow Cloak 20%)</li>
@@ -799,6 +831,7 @@
           <li>search gives gold and may give an item</li>
           <li>fights can also drop consumables, misc items, weapons or armor</li>
           <li>an empty location cannot be searched a second time</li>
+          <li>castle treasure_room: requires Old Key to open locked chest (80-200 gold + powerful weapon/armor + consumable). Key is consumed.</li>
         </ul>
       </article>
 

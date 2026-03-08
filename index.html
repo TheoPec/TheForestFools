@@ -380,7 +380,7 @@
       <p class="line">rpg based game</p>
       <p class="line">terminal styled game</p>
       <p class="line">dark fantasy adventure</p>
-      <p class="line">exploration, fights and loot</p>
+      <p class="line">exploration, fights and zone-based encounters</p>
     </div>
 
     <p class="separator">====================================================================================================================</p>
@@ -482,11 +482,26 @@
 
       <div>
         <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
-          <span>Patch 1.0.3 — Navigation, Training &amp; NPC Fixes</span>
+          <span>Patch 1.0.4 — Zone Enemies, Level Gating &amp; Castle Treasure</span>
           <span class="arrow">▶</span>
         </button>
         <div class="patch-content">
           <p class="patch-subtitle">Latest update</p>
+          <ul>
+            <li><strong>Zone-based enemies:</strong> each zone now has its own bestiary. Forests spawn rats, crows and boars. Caves hold wolves, bears and trolls. Castles have living armors, haunted knights and gargoyles. Dungeons contain cursed knights, demons and colossi.</li>
+            <li><strong>NPC level gating:</strong> NPCs only hint about zones the player can handle (forest lvl 1+, cave lvl 3+, castle lvl 6+, dungeon lvl 9+). If harder zones exist, they say “you haven’t the stature for them.”</li>
+            <li><strong>Old Key — Castle Treasure:</strong> castles now have a treasure_room with a locked chest. Use an Old Key to open it for 80-200 gold + a powerful weapon or armor + a bonus consumable. The key is consumed after use.</li>
+            <li><strong>Progressive difficulty:</strong> enemies scale naturally by zone tier, making exploration feel increasingly dangerous as players venture further.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
+          <span>Patch 1.0.3 — Navigation, Training &amp; NPC Fixes</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="patch-content">
           <ul>
             <li>New favicon and logo for the game. Executable and website updated to match.</li>
             <li><strong>train command:</strong> at a mage's courtyard (castle or capital), spend 150 gold to gain +1 spell slot (up to 6 max).</li>
