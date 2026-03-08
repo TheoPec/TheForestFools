@@ -1,5 +1,21 @@
-Patch 1.0.3 — New Icon & Branding
+Patch 1.0.3 — Navigation, Training & NPC Fixes
 
-New favicon and logo for the game.
-Executable now uses the new icon.
-Website favicon updated to match.
+Branding:
+- New favicon and logo for the game.
+- Executable now uses the new icon.
+- Website favicon updated to match.
+
+New features:
+- train command: while at a mage's courtyard (castle or capital), type 'train'
+  to spend 150 gold and gain an extra spell slot (up to 6 max).
+- cd auto-enter: navigating to a map cell with a location (e.g. cd E5) now
+  automatically enters the location and shows the available sub-locations.
+  No need to type 'cd capital' separately.
+- cd prefix matching: you can now type partial subloc names (e.g. 'cd cou'
+  for 'courtyard', 'cd en' for 'entrance'). Ambiguous prefixes show all matches.
+
+Bug fixes:
+- talk: fixed the bug where NPCs would only reveal one location globally.
+  Each NPC now has exactly 2 assigned locations they can tell you about
+  (chosen randomly at first interaction). Different NPCs reveal different places.
+  Map reveals are now per-POI (not capped globally at 2).
