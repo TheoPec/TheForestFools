@@ -664,7 +664,8 @@ class Player:
         self.armors = ["cloth_rags"]
         self.consumables = ["small_potion"]
         self.misc = []
-        self.spells = []  # learned spells (max 3)
+        self.spells = []  # learned spells
+        self.max_spells = 3  # maximum spell slots (can be increased via train)
 
         # Map
         self.has_map = False
@@ -938,6 +939,14 @@ class Game:
         pos, loc_type = random.choice(pois)
         return pos, coord_label(pos), loc_type
 
+    def _pick_two_pois_for_dialogue(self):
+        """Pick up to two distinct points of interest for NPC dialogue."""
+        pois = [(pos, t) for pos, t in find_poi(self.world, exclude_pos=self.player.pos) if t != "dragon_lair"]
+        if not pois:
+            return []
+        count = min(2, len(pois))
+        return random.sample(pois, count)
+
     # -- commands --
 
     def cmd_help(self, _args):
@@ -961,6 +970,7 @@ class Game:
             ("buy {item}",       "Buy from merchant / mage / warlock / explorer."),
             ("sell {item}",      "Sell to a merchant (when at merchant)."),
             ("cast {spell}",     "Cast a spell (in combat)."),
+            ("train",            "Train with the mage (courtyard) to gain a spell slot."),
             ("fight",            "Fight enemies (in dungeons/caves/forests)."),
             ("search",           "Search for loot (in special locations)."),
             ("sleep",            "Rest at a tavern (heals HP & mana, 10 gold)."),
@@ -970,7 +980,7 @@ class Game:
             ("SHORTCUTS",        "h=help m=map l=look t=talk s=search"),
             ("",                 "f=fight i=inventory e=equip u=use b=buy q=quit"),
             ("", ""),
-            ("TIP",              "Type partial item names (e.g. 'sell sm' for Small Potion)."),
+            ("TIP",              "Type partial names: 'cd cou' for courtyard, 'sell sm' for Small Potion."),
         ]
         for cmd, desc in cmds:
             print(f"  {styled(cmd.ljust(20), C.CYAN)} {styled(desc, C.DIM)}")
@@ -1001,6 +1011,7 @@ class Game:
                 print()
                 print(styled("  A mage is here, surrounded by arcane runes.", C.MAGENTA))
                 print(styled("  Type 'buy' to see available spells.", C.MAGENTA))
+                print(styled("  Type 'train' to increase your spell capacity (costs gold).", C.MAGENTA))
             # Warlock in castle tower
             if self.player.subloc == "tower" and self.player.inside == "castle":
                 print()
@@ -1102,15 +1113,18 @@ class Game:
         templates = all_npcs[npc_name]
         template = random.choice(templates)
 
-        # Get a POI to mention
-        poi_pos, coord, loc_type = self._pick_poi_for_dialogue()
-        if coord and loc_type:
+        # Get two POIs to reveal; the first is used in the NPC line template
+        pois = self._pick_two_pois_for_dialogue()
+
+        if pois:
+            poi_pos, loc_type = pois[0]
+            coord = coord_label(poi_pos)
             line = template.format(
                 coord=styled(coord, C.BOLD, C.CYAN),
                 loc_type=styled(loc_type, C.BOLD, C.YELLOW),
             )
         else:
-            # Fallback if somehow no POIs exist
+            poi_pos = None
             line = template.format(coord="the far reaches", loc_type="dark place")
 
         npc_display = npc_name.replace("_", " ").title()
@@ -1119,15 +1133,20 @@ class Game:
         print(styled(f"  [{npc_display}]", C.BOLD, C.YELLOW))
         print()
         self.wrap_print(line, C.WHITE)
-        if poi_pos and p.locations_revealed < 2:
-            self.world[poi_pos]["revealed"] = True
-            p.locations_revealed += 1
-            remaining = 2 - p.locations_revealed
-            print(styled("  [A new location has been revealed on your map!]", C.BOLD, C.CYAN))
-            if remaining == 0:
-                print(styled("  [NPCs have no more locations to share. Buy a map from the explorer at a port!]", C.DIM))
-        elif poi_pos:
-            print(styled("  [The NPC has nothing new to reveal. Buy a map from the explorer at a port!]", C.DIM))
+
+        # Reveal all picked POIs on the map (no cap)
+        newly_revealed = []
+        for pos, ltype in pois:
+            if not self.world[pos].get("revealed"):
+                self.world[pos]["revealed"] = True
+                newly_revealed.append((pos, ltype))
+
+        if newly_revealed:
+            for pos, ltype in newly_revealed:
+                print(styled(
+                    f"  [Location revealed on your map: {ltype.replace('_', ' ').title()} at {coord_label(pos)}!]",
+                    C.BOLD, C.CYAN,
+                ))
         self.print_sep()
         print()
 
@@ -1154,7 +1173,7 @@ class Game:
         print(f"  Armor:   {styled(p.armor_name(), C.CYAN)}")
         if p.spells:
             spell_names = ", ".join(SPELLS[s]["name"] for s in p.spells if s in SPELLS)
-            print(f"  Spells:  {styled(spell_names, C.MAGENTA)}")
+            print(f"  Spells:  {styled(spell_names, C.MAGENTA)} ({len(p.spells)}/{p.max_spells})")
         if p.has_map:
             print(f"  Map:     {styled('Full map unlocked', C.GREEN)}")
         print()
@@ -1213,6 +1232,35 @@ class Game:
                 print(f"    {name} ({detail_str}, {mana_cost} mana)")
         print()
 
+    def cmd_train(self, _args):
+        """Train with the mage to increase max spell slots."""
+        p = self.player
+        if not (p.subloc == "courtyard" and p.inside in ("castle", "capital")):
+            print(styled("  You must be in the courtyard with the mage to train.", C.RED))
+            return
+        cost = 150 * p.max_spells  # each additional slot costs 150 × current capacity
+        print()
+        self.print_sep()
+        print(styled("  [The Mage]", C.BOLD, C.MAGENTA))
+        print()
+        self.wrap_print(
+            f'"For {cost} gold I can expand your arcane capacity from {p.max_spells} '
+            f'to {p.max_spells + 1} spell slot(s)."',
+            C.WHITE,
+        )
+        print()
+        if p.gold < cost:
+            print(styled(f"  You need {cost} gold to train. You have {p.gold}.", C.RED))
+        else:
+            p.gold -= cost
+            p.max_spells += 1
+            print(styled(
+                f"  You train with the mage. Spell capacity increased to {p.max_spells}! (Gold: {p.gold})",
+                C.MAGENTA, C.BOLD,
+            ))
+        self.print_sep()
+        print()
+
     def cmd_cd(self, args):
         if not args:
             print(styled("  Usage: cd {cell|location|subloc|..}", C.RED))
@@ -1234,28 +1282,44 @@ class Game:
                 print(styled("  You are already on the world map.", C.DIM))
             return
 
-        # If inside a location, try sub-location navigation
+        # If inside a location, try sub-location navigation (exact then prefix)
         if p.inside:
             subs = SUBLOCS.get(p.inside, [])
+            # Exact match
             if target in subs:
                 p.subloc = target
                 self.cmd_look([])
                 if target == "merchant" and self.current_tile()["type"] in ("village", "capital", "port"):
                     self._show_merchant()
                 return
+            # Exact match on location name itself (go back to location root)
             if target == p.inside:
                 p.subloc = None
                 self.cmd_look([])
                 return
+            # Prefix match on sub-locations
+            matches = [s for s in subs if s.startswith(target)]
+            if len(matches) == 1:
+                p.subloc = matches[0]
+                self.cmd_look([])
+                if matches[0] == "merchant" and self.current_tile()["type"] in ("village", "capital", "port"):
+                    self._show_merchant()
+                return
+            if len(matches) > 1:
+                options = ", ".join(matches)
+                print(styled(f"  Ambiguous destination. Did you mean: {options}?", C.YELLOW))
+                return
 
-        # Try location entry: cd village, cd cave, etc.
+        # Try location entry: cd village, cd cave, etc. (exact then prefix)
         tile = self.current_tile()
-        if target == tile["type"] and target != "plains" and not p.inside:
-            p.inside = target
-            p.subloc = None
-            tile["visited"] = True
-            self.cmd_look([])
-            return
+        tile_type = tile["type"]
+        if not p.inside and tile_type != "plains":
+            if target == tile_type or tile_type.startswith(target):
+                p.inside = tile_type
+                p.subloc = None
+                tile["visited"] = True
+                self.cmd_look([])
+                return
 
         # Try cell navigation: cd B4, cd J10, etc.
         cell = args[0].upper()
@@ -1277,9 +1341,18 @@ class Game:
                 p.pos = (col, row)
                 new_tile = self.current_tile()
                 new_tile["visited"] = True
+                t = new_tile["type"]
+                tile_name = TILE_NAMES.get(t, t.replace("_", " ").title())
                 print()
-                print(styled(f"  You travel to {self.pos_label()}...", C.YELLOW))
-                self._describe_arrival(new_tile)
+                if t not in ("plains", "water"):
+                    # Auto-enter the location and display subloc list
+                    print(styled(f"  You arrive at {tile_name} ({self.pos_label()}).", C.YELLOW))
+                    p.inside = t
+                    p.subloc = None
+                    self.cmd_look([])
+                else:
+                    print(styled(f"  You travel to {self.pos_label()}...", C.YELLOW))
+                    self._describe_arrival(new_tile)
                 return
             else:
                 print(styled(f"  Invalid cell: {cell}. Use A-J and 1-10.", C.RED))
@@ -1415,8 +1488,9 @@ class Game:
                 details.append(f"Shield +{info['shield']}")
             detail_str = ", ".join(details)
             print(f"    {info['name']} ({detail_str}, {info['mana']} mana)  --  {styled(str(info['value']) + ' gold', C.YELLOW)}")
-        print(f"\n  Spells known: {len(p.spells)}/3")
+        print(f"\n  Spells known: {len(p.spells)}/{p.max_spells}")
         print(styled("  Use 'buy {spell}' to learn a spell.", C.DIM))
+        print(styled("  Use 'train' to increase your spell capacity.", C.DIM))
         print()
 
     def _show_warlock_spells(self):
@@ -1439,8 +1513,9 @@ class Game:
                 details.append(f"Weaken {int(info['weaken']*100)}%")
             detail_str = ", ".join(details)
             print(f"    {info['name']} ({detail_str}, {info['mana']} mana)  --  {styled(str(info['value']) + ' gold', C.YELLOW)}")
-        print(f"\n  Spells known: {len(p.spells)}/3")
+        print(f"\n  Spells known: {len(p.spells)}/{p.max_spells}")
         print(styled("  Use 'buy {spell}' to learn a dark spell.", C.DIM))
+        print(styled("  Use 'train' to increase your spell capacity.", C.DIM))
         print()
 
     def cmd_buy(self, args):
@@ -1499,8 +1574,8 @@ class Game:
             if key in p.spells:
                 print(styled(f"  You already know {SPELLS[key]['name']}.", C.DIM))
                 return
-            if len(p.spells) >= 3:
-                print(styled("  You cannot learn more than 3 spells.", C.RED))
+            if len(p.spells) >= p.max_spells:
+                print(styled(f"  You cannot learn more than {p.max_spells} spells. Use 'train' to increase capacity.", C.RED))
                 return
             cost = SPELLS[key]["value"]
             if p.gold < cost:
@@ -1508,7 +1583,7 @@ class Game:
                 return
             p.gold -= cost
             p.spells.append(key)
-            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/3 spells) (Gold: {p.gold})", C.MAGENTA, C.BOLD))
+            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/{p.max_spells} spells) (Gold: {p.gold})", C.MAGENTA, C.BOLD))
             return
 
         # Buy spells from warlock in castle tower
@@ -1523,8 +1598,8 @@ class Game:
             if key in p.spells:
                 print(styled(f"  You already know {SPELLS[key]['name']}.", C.DIM))
                 return
-            if len(p.spells) >= 3:
-                print(styled("  You cannot learn more than 3 spells.", C.RED))
+            if len(p.spells) >= p.max_spells:
+                print(styled(f"  You cannot learn more than {p.max_spells} spells. Use 'train' to increase capacity.", C.RED))
                 return
             cost = SPELLS[key]["value"]
             if p.gold < cost:
@@ -1532,7 +1607,7 @@ class Game:
                 return
             p.gold -= cost
             p.spells.append(key)
-            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/3 spells) (Gold: {p.gold})", C.RED, C.BOLD))
+            print(styled(f"  Learned {SPELLS[key]['name']}! ({len(p.spells)}/{p.max_spells} spells) (Gold: {p.gold})", C.RED, C.BOLD))
             return
 
         # Standard merchant buying
@@ -2168,6 +2243,7 @@ class Game:
             "use":       self.cmd_use,
             "buy":       self.cmd_buy,
             "sell":      self.cmd_sell,
+            "train":     self.cmd_train,
             "fight":     self.cmd_fight,
             "search":    self.cmd_search,
             "sleep":     self.cmd_sleep,
@@ -2198,7 +2274,7 @@ class Game:
     |_| |_||_|___|  |_|  \___/|_|_\___|___/ |_|    |_|  \___/ \___/|____|___/
         """, C.BOLD, C.RED))
 
-        print(styled("    Version 1.0.2", C.DIM))
+        print(styled("    Version 1.0.3", C.DIM))
         print(styled("    A Dark Medieval Gothic Exploration", C.DIM))
         print()
         print(styled("    You awaken in a grey, desolate land. Fog clings to the earth.", C.WHITE))
