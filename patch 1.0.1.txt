@@ -1,11 +1,16 @@
 Patch 1.0.1 — Terrain, Ports & QoL
 
-Logo corrigé : "THE FOREST FOOLS" s'affiche correctement, version affichée au lancement.
-Terrain coloré : la map a maintenant de l'eau (bleu) sur les bords, du sable (jaune) en côte, de l'herbe (vert/vert foncé) à l'intérieur. On ne peut pas traverser l'eau.
-Ports : nouveau lieu sur le sable avec dock (chalutier pour future MAJ), taverne et marchand.
-Commande sleep : dormir à la taverne pour 10 gold — restaure toute la vie, donne un peu d'XP et reset le stock des marchands.
-Commande unequip : déséquiper arme ou armure.
-Respawn des mobs : ennemis et loot reviennent après 15 actions.
-Inventaire groupé : les doublons sont affichés avec un compteur (x3).
-Raccourcis clavier : h, m, l, t, s, f, i, e, u, b, q.
-Auto-complétion : taper le début d'un nom d'item suffit (ex: sell sm → Small Potion).
+New features:
+- Logo fix: "THE FOREST FOOLS" now displays correctly, version shown at launch.
+- Colored terrain: the map now has water (blue) on borders, sand (yellow) on
+  coasts and grass (green/dark green) inland. Water is impassable.
+- Ports: new location on sand tiles with dock (chalutier, future update), tavern
+  and merchant.
+- sleep command: sleep at a tavern for 10 gold — fully restores HP, grants some
+  XP and resets merchant stock.
+- unequip command: unequip weapon or armor.
+- Mob respawn: enemies and loot respawn after 15 actions.
+- Grouped inventory: duplicates are displayed with a count (x3).
+- Keyboard shortcuts: h, m, l, t, s, f, i, e, u, b, q.
+- Auto-completion: typing the start of an item name is enough
+  (e.g. "sell sm" → Small Potion).

@@ -482,15 +482,17 @@
 
       <div>
         <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
-          <span>Patch 1.0.3 — New Icon &amp; Branding</span>
+          <span>Patch 1.0.3 — Navigation, Training &amp; NPC Fixes</span>
           <span class="arrow">▶</span>
         </button>
         <div class="patch-content">
           <p class="patch-subtitle">Latest update</p>
           <ul>
-            <li>New favicon and logo for the game.</li>
-            <li>Executable now uses the new icon.</li>
-            <li>Website favicon updated to match.</li>
+            <li>New favicon and logo for the game. Executable and website updated to match.</li>
+            <li><strong>train command:</strong> at a mage's courtyard (castle or capital), spend 150 gold to gain +1 spell slot (up to 6 max).</li>
+            <li><strong>cd auto-enter:</strong> navigating to a map cell (e.g. cd E5) now automatically enters the location and shows available sub-locations directly.</li>
+            <li><strong>cd prefix matching:</strong> type just the beginning of a subloc name (e.g. "cd cou" → courtyard, "cd en" → entrance). Ambiguous prefixes list all matches.</li>
+            <li><strong>talk fix:</strong> each NPC now has exactly 2 assigned locations they mention (chosen at first interaction). Different NPCs reveal different places. No more global cap of 2 reveals.</li>
           </ul>
         </div>
       </div>

@@ -1,10 +1,18 @@
-Patch 1.0.2 — Magie, Esquive & Exploration
+Patch 1.0.2 — Magic, Dodge & Exploration
 
-Mana : nouveau système de mana (50 de base, +10 par level-up, restauré en dormant à la taverne).
-Sorts : achetez des sorts chez le Mage (courtyard des castles/capital) ou le Warlock (tower des castles). Max 3 sorts. Utilisez "cast" en combat pour les lancer.
-Carte complète : achetez une carte chez l'Explorateur au dock des ports (200 gold) pour révéler tous les lieux d'un coup.
-Limite des PNJs : les PNJs ne révèlent plus que 2 localisations max. Après, il faut acheter la carte.
-Esquive : les armures ont un % d'esquive (ex: Shadow Cloak 20%, Leather Vest 10%). Chaque attaque ennemie peut être esquivée.
-Défense : stat "Defense" remplace "Armor" dans l'affichage.
-Commande cheat : tape "cheat" pour tout débloquer (lvl 20, 99999 gold, tous items/sorts, carte). Pour le beta testing.
-Dragon nerf : le dragon a maintenant 350 PV et 40 ATK fixes (plus de scaling).
+New features:
+- Mana: new mana system (50 base, +10 per level-up, restored by sleeping at a
+  tavern).
+- Spells: buy spells from the Mage (castle/capital courtyard) or the Warlock
+  (castle tower). Max 3 spells. Use "cast" in combat to cast them.
+- Full map: buy a map from the Explorer at the port dock (200 gold) to reveal
+  all locations at once.
+- Dodge: armors now have a dodge % (e.g. Shadow Cloak 20%, Leather Vest 10%).
+  Each enemy attack can be dodged.
+- Defense: "Defense" stat replaces "Armor" in the display.
+- cheat command: type "cheat" to unlock everything (level 20, 99999 gold, all
+  items/spells, full map). For beta testing.
+
+Bug fixes:
+- NPC limit: NPCs now only reveal up to 2 locations. After that, buy the map.
+- Dragon nerf: the dragon now has 350 HP and 40 ATK (no more scaling).

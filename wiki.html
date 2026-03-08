@@ -773,7 +773,7 @@
           <li>base mana: 50, +10 per level-up</li>
           <li>mana is restored by sleeping at a tavern (10 gold)</li>
           <li>buy spells from the Mage (castle/capital courtyard) or the Warlock (castle tower)</li>
-          <li>maximum of 3 spells equipped at a time</li>
+          <li>default maximum of 3 spells — use "train" at a mage's courtyard (150 gold) to expand up to 6</li>
           <li>use "cast" command during combat to cast a spell</li>
         </ul>
         <p class="muted">added in patch 1.0.2</p>
@@ -818,7 +818,9 @@
         <ul>
           <li>help (h)</li>
           <li>map (m)</li>
-          <li>cd {cell}, cd {location}, cd {subloc}, cd ..</li>
+          <li>cd {cell} — auto-enters the location if one exists (e.g. cd E5 enters the capital directly)</li>
+          <li>cd {location}, cd {subloc} — prefix matching supported (e.g. "cd cou" → courtyard)</li>
+          <li>cd ..</li>
           <li>look (l)</li>
           <li>talk (t)</li>
           <li>stats (s)</li>
@@ -831,12 +833,13 @@
           <li>sell {item}</li>
           <li>cast {spell} — during combat</li>
           <li>sleep — at tavern, costs 10 gold</li>
+          <li>train — at mage's courtyard, costs 150 gold, adds +1 spell slot</li>
           <li>search</li>
           <li>cheat — unlocks everything (beta testing)</li>
           <li>quit / exit (q)</li>
         </ul>
-        <p class="muted">auto-completion: type the beginning of an item name (e.g. "sell sm" → Small Potion).</p>
-        <p class="muted">keyboard shortcuts in parentheses, added in patch 1.0.1.</p>
+        <p class="muted">auto-completion: type the beginning of an item name (e.g. "sell sm" → Small Potion). cd also supports prefix matching for sub-location names.</p>
+        <p class="muted">keyboard shortcuts in parentheses, added in patch 1.0.1. train command added in patch 1.0.3.</p>
       </article>
     </div>
     <p class="section-back"><a href="#top">back to top</a></p>
