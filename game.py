@@ -161,22 +161,60 @@ ALL_ITEMS.update(CONSUMABLES)
 ALL_ITEMS.update(MISC_ITEMS)
 
 # ---------------------------------------------------------------------------
-# Data: Enemies
+# Data: Enemies (per zone, scaling difficulty)
 # ---------------------------------------------------------------------------
 
-ENEMIES = [
-    {"name": "Hollow Wraith",    "hp": 30,  "attack": 6,  "gold": (5, 15),  "xp": 15},
-    {"name": "Skeletal Soldier",  "hp": 40,  "attack": 8,  "gold": (8, 20),  "xp": 20},
-    {"name": "Plague Rat Swarm",  "hp": 20,  "attack": 4,  "gold": (2, 8),   "xp": 8},
-    {"name": "Cursed Knight",     "hp": 70,  "attack": 14, "gold": (15, 40), "xp": 40},
-    {"name": "Tomb Guardian",     "hp": 60,  "attack": 12, "gold": (12, 30), "xp": 30},
-    {"name": "Shadow Stalker",    "hp": 50,  "attack": 10, "gold": (10, 25), "xp": 25},
-    {"name": "Undead Priest",     "hp": 45,  "attack": 11, "gold": (10, 28), "xp": 28},
-    {"name": "Giant Spider",      "hp": 35,  "attack": 7,  "gold": (4, 12),  "xp": 12},
-    {"name": "Goblin Scavenger",  "hp": 25,  "attack": 5,  "gold": (3, 10),  "xp": 10},
-    {"name": "Dark Sorcerer",     "hp": 55,  "attack": 16, "gold": (20, 50), "xp": 45},
-    {"name": "Bone Colossus",     "hp": 100, "attack": 20, "gold": (30, 70), "xp": 60},
-]
+# Zone tiers: forest (easy) -> cave (medium) -> castle (hard) -> dungeon (very hard)
+ZONE_ENEMIES = {
+    "forest": [
+        {"name": "Giant Rat",         "hp": 15,  "attack": 3,  "gold": (2, 6),   "xp": 6},
+        {"name": "Wild Crow",         "hp": 12,  "attack": 2,  "gold": (1, 4),   "xp": 4},
+        {"name": "Plague Rat Swarm",  "hp": 20,  "attack": 4,  "gold": (2, 8),   "xp": 8},
+        {"name": "Feral Boar",        "hp": 25,  "attack": 5,  "gold": (3, 8),   "xp": 10},
+        {"name": "Giant Spider",      "hp": 22,  "attack": 4,  "gold": (2, 7),   "xp": 7},
+        {"name": "Goblin Scavenger",  "hp": 18,  "attack": 3,  "gold": (2, 6),   "xp": 6},
+        {"name": "Venomous Snake",    "hp": 14,  "attack": 5,  "gold": (2, 5),   "xp": 5},
+    ],
+    "cave": [
+        {"name": "Cave Wolf",         "hp": 35,  "attack": 7,  "gold": (5, 15),  "xp": 15},
+        {"name": "Brown Bear",        "hp": 50,  "attack": 9,  "gold": (8, 20),  "xp": 20},
+        {"name": "Cave Bat Swarm",    "hp": 25,  "attack": 6,  "gold": (4, 12),  "xp": 12},
+        {"name": "Rock Troll",        "hp": 60,  "attack": 10, "gold": (10, 25), "xp": 22},
+        {"name": "Shadow Stalker",    "hp": 40,  "attack": 8,  "gold": (6, 18),  "xp": 18},
+        {"name": "Undead Miner",      "hp": 30,  "attack": 7,  "gold": (5, 15),  "xp": 14},
+    ],
+    "castle": [
+        {"name": "Living Armor",      "hp": 60,  "attack": 12, "gold": (12, 30), "xp": 30},
+        {"name": "Haunted Knight",    "hp": 70,  "attack": 14, "gold": (15, 35), "xp": 35},
+        {"name": "Hollow Wraith",     "hp": 50,  "attack": 11, "gold": (10, 28), "xp": 28},
+        {"name": "Cursed Sentinel",   "hp": 65,  "attack": 13, "gold": (12, 32), "xp": 32},
+        {"name": "Spectral Guard",    "hp": 55,  "attack": 12, "gold": (10, 28), "xp": 28},
+        {"name": "Gargoyle",          "hp": 75,  "attack": 15, "gold": (15, 40), "xp": 38},
+    ],
+    "dungeon": [
+        {"name": "Cursed Knight",     "hp": 80,  "attack": 16, "gold": (18, 45), "xp": 45},
+        {"name": "Tomb Guardian",     "hp": 90,  "attack": 18, "gold": (20, 50), "xp": 50},
+        {"name": "Dark Sorcerer",     "hp": 70,  "attack": 20, "gold": (25, 60), "xp": 55},
+        {"name": "Bone Colossus",     "hp": 120, "attack": 22, "gold": (30, 70), "xp": 65},
+        {"name": "Undead Priest",     "hp": 65,  "attack": 17, "gold": (18, 45), "xp": 45},
+        {"name": "Abyssal Demon",     "hp": 100, "attack": 24, "gold": (30, 80), "xp": 70},
+    ],
+}
+
+# Fallback for any zone not explicitly listed
+ENEMIES_FALLBACK = ZONE_ENEMIES["forest"]
+
+# Zone level requirements (player must be at least this level for NPCs to hint about the zone)
+ZONE_LEVEL_REQUIREMENTS = {
+    "forest": 1,
+    "cave": 3,
+    "castle": 6,
+    "dungeon": 9,
+    "dragon_lair": 5,  # king quest requires level 5
+}
+
+# Order in which zones are unlocked for NPC hints
+ZONE_TIERS = ["forest", "cave", "castle", "dungeon"]
 
 # ---------------------------------------------------------------------------
 # Data: Gothic Descriptions
@@ -273,6 +311,7 @@ DESC_SUBLOCS = {
     ],
     "treasure_room": [
         "A heavy door opens onto a small chamber. Chests, some broken, some locked, line the walls. Gold coins are scattered among dust and cobwebs.",
+        "Behind a reinforced iron door, a vault of ancient riches awaits. One large chest, bound in black iron and carved with runes, sits at the centre — locked tight.",
     ],
     # Castle sub-locations
     "courtyard": [
@@ -335,7 +374,7 @@ SUBLOCS = {
     "village": ["merchant", "blacksmith", "tavern", "chapel", "square"],
     "cave":    ["entrance", "corridor", "crypt", "altar", "treasure_room"],
     "dungeon": ["entrance", "corridor", "crypt", "altar", "treasure_room"],
-    "castle":  ["courtyard", "great_hall", "tower", "dungeon_cells", "throne_room"],
+    "castle":  ["courtyard", "great_hall", "tower", "dungeon_cells", "throne_room", "treasure_room"],
     "forest":  ["clearing", "ruins", "stream"],
     "capital": ["courtyard", "great_hall", "throne_room", "barracks", "merchant", "tavern"],
     "dragon_lair": ["entrance", "tunnel", "hoard", "nest"],
@@ -934,12 +973,31 @@ class Game:
         return " > ".join(parts)
 
     def _pick_poi_for_dialogue(self):
-        """Pick a random point of interest to mention in NPC dialogue."""
+        """Pick a random point of interest to mention in NPC dialogue, filtered by level."""
         pois = [(pos, t) for pos, t in find_poi(self.world, exclude_pos=self.player.pos) if t != "dragon_lair"]
         if not pois:
             return None, None, None
-        pos, loc_type = random.choice(pois)
+        # Filter to zones the player has access to based on level
+        accessible = [(pos, t) for pos, t in pois
+                      if self.player.level >= ZONE_LEVEL_REQUIREMENTS.get(t, 1)]
+        if not accessible:
+            return None, None, None
+        pos, loc_type = random.choice(accessible)
         return pos, coord_label(pos), loc_type
+
+    def _get_highest_unlocked_zone(self):
+        """Return the highest zone tier the player has unlocked."""
+        for zone in reversed(ZONE_TIERS):
+            if self.player.level >= ZONE_LEVEL_REQUIREMENTS[zone]:
+                return zone
+        return "forest"
+
+    def _get_next_locked_zone(self):
+        """Return the next zone tier the player hasn't unlocked yet, or None."""
+        for zone in ZONE_TIERS:
+            if self.player.level < ZONE_LEVEL_REQUIREMENTS[zone]:
+                return zone
+        return None
 
     # -- commands --
 
@@ -1018,6 +1076,15 @@ class Game:
                     print(styled(f"  Type 'buy map' to buy a full map ({MAP_COST} gold).", C.CYAN))
                 else:
                     print(styled("  You already own the full map.", C.DIM))
+            # Castle treasure room hint
+            if self.player.subloc == "treasure_room" and self.player.inside == "castle":
+                print()
+                if self.world[self.player.pos].get("castle_treasure_opened"):
+                    print(styled("  The chest lies open and empty.", C.DIM))
+                elif "old_key" in self.player.misc:
+                    print(styled("  A locked chest sits here. You have an Old Key! Type 'search' to open it.", C.YELLOW, C.BOLD))
+                else:
+                    print(styled("  A locked chest sits here. You need an Old Key to open it.", C.YELLOW))
         elif self.player.inside:
             desc_map = {
                 "plains": DESC_PLAINS, "forest": DESC_FOREST,
@@ -1106,10 +1173,11 @@ class Game:
         templates = all_npcs[npc_name]
         template = random.choice(templates)
 
-        # Each NPC has exactly 2 assigned POIs (assigned on first interaction)
-        npc_key = f"{subloc}:{npc_name}"
+        # Each NPC has assigned POIs filtered by player level (reassigned per level tier)
+        npc_key = f"{subloc}:{npc_name}:lvl{self._get_highest_unlocked_zone()}"
         if npc_key not in self.npc_pois:
-            all_pois = [(pos, t) for pos, t in find_poi(self.world, exclude_pos=p.pos) if t != "dragon_lair"]
+            all_pois = [(pos, t) for pos, t in find_poi(self.world, exclude_pos=p.pos)
+                        if t != "dragon_lair" and p.level >= ZONE_LEVEL_REQUIREMENTS.get(t, 1)]
             chosen = random.sample(all_pois, min(2, len(all_pois)))
             self.npc_pois[npc_key] = [(pos, coord_label(pos), loc_type) for pos, loc_type in chosen]
 
@@ -1135,6 +1203,18 @@ class Game:
             print(styled("  [A new location has been revealed on your map!]", C.BOLD, C.CYAN))
         elif poi_pos:
             print(styled("  [This location is already on your map.]", C.DIM))
+
+        # Check if there are higher-tier zones the player can't access yet
+        next_zone = self._get_next_locked_zone()
+        if next_zone:
+            req_lvl = ZONE_LEVEL_REQUIREMENTS[next_zone]
+            print()
+            npc_display_lower = npc_display.lower()
+            self.wrap_print(
+                f"\"I know of darker places... but you haven't the stature for them. "
+                f"Come back when you're stronger. (Reach level {req_lvl} to unlock {next_zone} hints)\"",
+                C.DIM
+            )
         self.print_sep()
         print()
 
@@ -1657,7 +1737,8 @@ class Game:
             print(styled("  This area has been cleared of enemies. (For now...)", C.DIM))
             return
 
-        enemy_template = random.choice(ENEMIES)
+        enemy_pool = ZONE_ENEMIES.get(loc, ENEMIES_FALLBACK)
+        enemy_template = random.choice(enemy_pool)
         scale = 1 + (p.level - 1) * 0.15
         enemy = {
             "name": enemy_template["name"],
@@ -2016,6 +2097,52 @@ class Game:
             print(styled("  Nothing to search here in the open.", C.DIM))
             return
 
+        # Castle treasure room: requires Old Key
+        if p.subloc == "treasure_room" and p.inside == "castle":
+            castle_key = (p.pos, "castle_treasure_opened")
+            if self.world[p.pos].get("castle_treasure_opened"):
+                print(styled("  The chest lies open and empty. You've already claimed the treasure.", C.DIM))
+                return
+            if "old_key" not in p.misc:
+                print()
+                self.print_sep()
+                self.wrap_print(
+                    "A massive iron-bound chest sits in the centre of the vault. "
+                    "Its lock is ancient but sturdy — engraved with worn symbols. "
+                    "You need a key to open it.", C.WHITE)
+                print(styled("  [You need an Old Key to open this chest.]", C.RED))
+                self.print_sep()
+                print()
+                return
+            # Use the Old Key
+            p.misc.remove("old_key")
+            self.world[p.pos]["castle_treasure_opened"] = True
+            print()
+            self.print_sep()
+            self.wrap_print(
+                "You insert the Old Key into the ancient lock. It turns with a "
+                "grinding screech. The chest lid creaks open, revealing a trove of riches!", C.WHITE)
+            print()
+            # Generous loot from the castle chest
+            treasure_gold = random.randint(80, 200)
+            p.gold += treasure_gold
+            print(styled(f"  Found {treasure_gold} gold!", C.YELLOW))
+            # Always drop a good weapon or armor
+            good_loot = random.choice(["steel_sword", "war_hammer", "dark_blade", "plate_armor", "dark_plate", "silver_longsword"])
+            info = ALL_ITEMS[good_loot]
+            p.add_item(good_loot)
+            print(styled(f"  Found: {info['name']}!", C.GREEN, C.BOLD))
+            # Bonus consumables
+            bonus = random.choice(list(CONSUMABLES.keys()))
+            bonus_info = CONSUMABLES[bonus]
+            p.add_item(bonus)
+            print(styled(f"  Found: {bonus_info['name']}!", C.GREEN))
+            print()
+            print(styled("  [The Old Key crumbles to dust after use.]", C.DIM))
+            self.print_sep()
+            print()
+            return
+
         if not tile.get("loot_available"):
             print(styled("  You've already searched this place thoroughly. Nothing remains.", C.DIM))
             return
@@ -2245,7 +2372,7 @@ class Game:
     |_| |_||_|___|  |_|  \___/|_|_\___|___/ |_|    |_|  \___/ \___/|____|___/
         """, C.BOLD, C.RED))
 
-        print(styled("    Version 1.0.3", C.DIM))
+        print(styled("    Version 1.0.4", C.DIM))
         print(styled("    A Dark Medieval Gothic Exploration", C.DIM))
         print()
         print(styled("    You awaken in a grey, desolate land. Fog clings to the earth.", C.WHITE))
