@@ -1,0 +1,36 @@
+Patch 1.0.5 — Code Restructure & Modular Content System
+
+The entire codebase has been restructured into a modular architecture.
+The game plays exactly the same — this is a behind-the-scenes overhaul
+to make adding new content dramatically easier.
+
+Project structure:
+- data/           All game content (easy to edit, no code knowledge needed)
+    weapons.py      Weapons — add a line to add a weapon
+    armors.py       Armors — add a line to add an armor
+    consumables.py  Potions and consumables
+    misc_items.py   Miscellaneous items (keys, gems, etc.)
+    spells.py       Spells — set "source" to "mage" or "warlock" to choose vendor
+    enemies.py      Monsters per zone + dragon boss stats
+    locations.py    Tile types, sub-locations, gothic descriptions
+    npcs.py         NPC dialogue templates
+    config.py       All game constants (prices, level requirements, start stats)
+
+- engine/         Game logic (rarely needs editing)
+    terminal.py     ANSI colors, styled text, console font setup
+    player.py       Player class
+    world.py        World generation and map rendering
+    combat.py       Combat system (regular fights + dragon boss)
+    intro.py        Intro sequence and ASCII art
+
+- game.py         Main game engine (slim, imports everything from data/ and engine/)
+
+How to add content:
+- New weapon: add one line in data/weapons.py
+- New monster: add one dict in data/enemies.py under the desired zone
+- New spell: add one dict in data/spells.py, set "source" to "mage" or "warlock"
+- New potion: add one line in data/consumables.py
+- Tweak prices, XP, level requirements: edit data/config.py
+
+No gameplay changes in this patch — all features from 1.0.4 remain intact.
+The old monolithic game.py is backed up as game_old_backup.py.

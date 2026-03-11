@@ -8,12 +8,12 @@
 <style>
   @font-face {
     font-family: "Enchanted Land";
-    src: url("Enchanted%20Land.otf") format("opentype");
+    src: url("../fonts/Enchanted%20Land.otf") format("opentype");
   }
 
   @font-face {
     font-family: "Old London";
-    src: url("old_london/OldLondon.ttf") format("truetype");
+    src: url("../fonts/OldLondon.ttf") format("truetype");
   }
 
   :root {
@@ -482,11 +482,25 @@
 
       <div>
         <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
-          <span>Patch 1.0.4 — Zone Enemies, Level Gating &amp; Castle Treasure</span>
+          <span>Patch 1.0.5 — Under The Hood</span>
           <span class="arrow">▶</span>
         </button>
         <div class="patch-content">
           <p class="patch-subtitle">Latest update</p>
+          <ul>
+            <li><strong>Better foundations:</strong> the entire game engine has been rebuilt behind the scenes to support faster content updates going forward.</li>
+            <li><strong>Easier modding:</strong> weapons, armors, spells, monsters and items are now stored in separate files — making it simple to add and tweak content.</li>
+            <li><strong>No gameplay changes:</strong> everything plays exactly the same as 1.0.4. This patch is purely structural to prepare for upcoming content drops.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <button class="patch-toggle" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='false'?'true':'false');this.nextElementSibling.classList.toggle('open')">
+          <span>Patch 1.0.4 — Zone Enemies, Level Gating &amp; Castle Treasure</span>
+          <span class="arrow">▶</span>
+        </button>
+        <div class="patch-content">
           <ul>
             <li><strong>Zone-based enemies:</strong> each zone now has its own bestiary. Forests spawn rats, crows and boars. Caves hold wolves, bears and trolls. Castles have living armors, haunted knights and gargoyles. Dungeons contain cursed knights, demons and colossi.</li>
             <li><strong>NPC level gating:</strong> NPCs only hint about zones the player can handle (forest lvl 1+, cave lvl 3+, castle lvl 6+, dungeon lvl 9+). If harder zones exist, they say “you haven’t the stature for them.”</li>
