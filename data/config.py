@@ -7,8 +7,27 @@
 """
 
 # Grille de la carte
-COLS = "ABCDEFGHIJ"
-ROWS = range(1, 11)
+def column_labels(count):
+    labels = []
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    for index in range(count):
+        if index < 26:
+            labels.append(alphabet[index])
+        else:
+            labels.append("A" + alphabet[index - 26])
+    return labels
+
+
+COLS_10 = column_labels(10)
+COLS_26 = column_labels(26)
+COLS_52 = column_labels(52)
+ROWS_10 = range(1, 11)
+ROWS_26 = range(1, 27)
+ROWS_52 = range(1, 53)
+
+# Valeurs de compatibilite pour les anciens bouts de code.
+COLS = COLS_52
+ROWS = ROWS_52
 
 # Prix
 MAP_COST = 200          # prix de la carte complète chez l'explorateur
@@ -51,7 +70,7 @@ WORLD_TILE_COUNTS = [
 PORT_COUNT = 2
 
 # Position de départ / capitale
-CAPITAL_POS = ("E", 5)
+CAPITAL_POS = ("M", 10)
 
 # Joueur — stats de départ
 PLAYER_START_HP = 100

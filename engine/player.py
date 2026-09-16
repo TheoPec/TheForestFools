@@ -21,10 +21,16 @@ class Player:
         self.max_mana = PLAYER_START_MANA
         self.base_attack = PLAYER_START_ATTACK
         self.base_armor = 0
+        self.magic_power = 0
         self.gold = PLAYER_START_GOLD
         self.level = 1
         self.xp = 0
         self.xp_to_next = XP_BASE
+
+        # Character creation
+        self.race = "human"
+        self.gender = "male"
+        self.character_class = "warrior"
 
         self.weapon = PLAYER_START_WEAPON
         self.armor_equipped = PLAYER_START_ARMOR

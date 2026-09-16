@@ -1,25 +1,17 @@
-"""World generation and map rendering."""
+"""World maps and map rendering."""
 
 import random
 
 from data.config import COLS, ROWS, CAPITAL_POS, WORLD_TILE_COUNTS, PORT_COUNT
+from data.fixed_maps import FIXED_MAPS, REGIONS, TILE_CODE_TYPES, region_for_pos
 from data.locations import TILE_SYMBOLS, TILE_NAMES
-from data.consumables import CONSUMABLES
-from data.weapons import WEAPONS
-from data.armors import ARMORS
+from data.loot_tables import merchant_stock_for_region
 from engine.terminal import C, styled, TILE_COLORS, BG_COLORS
 
 
-def generate_merchant_stock():
+def generate_merchant_stock(region_key=None):
     """Generate a random merchant stock."""
-    stock = []
-    for key in random.sample(list(CONSUMABLES.keys()), k=min(3, len(CONSUMABLES))):
-        stock.append(key)
-    for key in random.sample(list(WEAPONS.keys()), k=random.randint(1, 3)):
-        stock.append(key)
-    if random.random() < 0.6:
-        stock.append(random.choice(list(ARMORS.keys())))
-    return stock
+    return merchant_stock_for_region(region_key)
 
 
 def generate_terrain():
@@ -94,7 +86,106 @@ def generate_terrain():
 
 
 def generate_world():
-    """Create a 10x10 world grid with terrain. Returns dict keyed by (col_letter, row_number)."""
+    """Return the starting fixed world for compatibility with older callers."""
+    return generate_worlds()["mosswake"]
+
+
+def generate_worlds():
+    """Create every fixed world map keyed by map id."""
+    return {map_key: build_fixed_world(map_key, spec) for map_key, spec in FIXED_MAPS.items()}
+
+
+def world_axes(world):
+    cols = sorted({pos[0] for pos in world}, key=column_sort_key)
+    rows = sorted({pos[1] for pos in world})
+    return cols, rows
+
+
+def column_sort_key(label):
+    value = 0
+    for char in label:
+        value = value * 26 + (ord(char) - ord("A") + 1)
+    return value
+
+
+def column_range_label(cols):
+    if not cols:
+        return "?"
+    return f"{cols[0]}-{cols[-1]}"
+
+
+def parse_coord(raw, cols, rows):
+    cell = raw.strip().upper()
+    letters = ""
+    digits = ""
+    for char in cell:
+        if char.isalpha() and not digits:
+            letters += char
+        elif char.isdigit():
+            digits += char
+        else:
+            return None
+    if not letters or not digits:
+        return None
+    try:
+        row = int(digits)
+    except ValueError:
+        return None
+    if letters not in cols or row not in rows:
+        return None
+    return letters, row
+
+
+def build_fixed_world(map_key, spec):
+    world = {}
+    named_tiles = spec.get("named_tiles", {})
+    fully_revealed = spec.get("fully_revealed", False)
+    start_revealed = set(spec.get("start_revealed", set()))
+    cols = list(spec.get("cols", COLS))
+    row_numbers = list(spec.get("row_numbers", range(1, len(spec["rows"]) + 1)))
+    for row_offset, row_data in enumerate(spec["rows"]):
+        row_index = row_numbers[row_offset]
+        for col_index, code in enumerate(row_data):
+            pos = (cols[col_index], row_index)
+            tile_type = TILE_CODE_TYPES.get(code, "plains")
+            terrain = terrain_for_fixed_tile(tile_type)
+            tile = {
+                "type": tile_type,
+                "terrain": terrain,
+                "visited": False,
+                "merchant_stock": None,
+                "loot_available": tile_type not in ("water", "plains"),
+                "enemies_cleared": tile_type in ("water", "plains", "village", "port", "capital"),
+                "revealed": fully_revealed or pos in start_revealed,
+                "map_key": map_key,
+            }
+            if map_key == "continent":
+                tile["region"] = region_for_pos(pos)
+            if tile_type in ("village", "port", "capital"):
+                tile["merchant_stock"] = generate_merchant_stock(map_key)
+            if tile_type == "slime_lair":
+                tile["enemies_cleared"] = False
+                tile["loot_available"] = False
+                tile["boss"] = "slime_king"
+            tile.update(named_tiles.get(pos, {}))
+            world[pos] = tile
+    return world
+
+
+def terrain_for_fixed_tile(tile_type):
+    if tile_type == "water":
+        return "water"
+    if tile_type == "port":
+        return "sand"
+    if tile_type in ("forest", "slime_lair"):
+        return "dark_grass"
+    if tile_type in ("cave", "castle", "dungeon", "dragon_lair"):
+        return "grass"
+    return "grass"
+
+
+def generate_random_world():
+    """Legacy random world generator, kept for experiments."""
     world = {}
     terrain = generate_terrain()
     capital_pos = CAPITAL_POS
@@ -152,30 +243,41 @@ def generate_world():
     return world
 
 
-def draw_map(world, player_pos=None):
+def draw_map(world, player_pos=None, title=None, region_filter=None, cols=None, rows=None, show_all=False):
     """Render the world map with terrain backgrounds and ASCII symbols."""
     col_w = 4
+    cols, rows = cols or world_axes(world)[0], rows or world_axes(world)[1]
     print()
+    if title:
+        print(styled(f"  {title}", C.BOLD, C.YELLOW))
+        print()
 
-    header = "      " + " ".join(c.center(col_w) for c in COLS)
+    header = "      " + " ".join(c.center(col_w) for c in cols)
     print(styled(header, C.BOLD, C.CYAN))
 
-    sep_line = "     " + "-" * (len(COLS) * (col_w + 1) - 1)
+    sep_line = "     " + "-" * (len(cols) * (col_w + 1) - 1)
     print(styled(sep_line, C.DIM))
 
-    for r in ROWS:
+    for r in rows:
         row_label = styled(f" {r:>2} ", C.BOLD, C.CYAN) + styled("| ", C.DIM)
         cells_str = []
-        for c in COLS:
+        for c in cols:
             pos = (c, r)
             tile = world[pos]
             t = tile["type"]
+            if region_filter and tile.get("region") != region_filter:
+                t = "unknown"
             ter = tile.get("terrain", "grass")
             bg = BG_COLORS.get(ter, "")
+            symbol_visible = show_all or tile.get("revealed") or tile.get("visited") or pos == player_pos
 
-            if t == "water":
+            if pos == player_pos and t != "unknown":
+                cell_str = bg + C.BOLD + C.WHITE + "@".center(col_w) + C.RESET
+            elif t == "water":
                 cell_str = bg + C.BOLD + C.WHITE + "~".center(col_w) + C.RESET
-            elif t not in ("plains", "capital") and not tile.get("revealed", False) and pos != player_pos:
+            elif t == "unknown":
+                cell_str = bg + C.DIM + "?".center(col_w) + C.RESET
+            elif t not in ("plains", "water") and not symbol_visible:
                 cell_str = bg + C.DIM + ".".center(col_w) + C.RESET
             else:
                 sym = TILE_SYMBOLS[t]
@@ -186,7 +288,7 @@ def draw_map(world, player_pos=None):
 
     print()
     legend_parts = []
-    for t_type in ["plains", "forest", "village", "cave", "castle", "dungeon",
+    for t_type in ["plains", "forest", "village", "slime_lair", "cave", "castle", "dungeon",
                     "capital", "dragon_lair", "port", "water"]:
         sym = TILE_SYMBOLS[t_type]
         name = TILE_NAMES[t_type]

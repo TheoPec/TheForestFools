@@ -1,924 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Forest Fools Wiki</title>
+<title>The Forest Fools - Wiki complet</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
-  @font-face {
-    font-family: "Old London";
-    src: url("../fonts/OldLondon.ttf") format("truetype");
-  }
-
+  @font-face { font-family: "Old London"; src: url("../fonts/OldLondon.ttf") format("truetype"); }
   :root {
-    --bg: #000000;
-    --text: #f2f2f2;
-    --muted: #bbbbbb;
-    --line: #d9d9d9;
-    --ascii-rail-width: 240px;
+    --paper: #fff0be; --paper2: #ffe2a1; --ink: #2b2013; --muted: #6b5735;
+    --line: #9f6d28; --panel: rgba(255, 248, 219, .91); --shadow: rgba(65, 38, 12, .22);
   }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0;
-    min-height: 100%;
-    background: radial-gradient(circle at top, #111111 0%, #000000 52%);
-    color: var(--text);
-    font-family: "Courier New", Courier, monospace;
-    scroll-behavior: smooth;
-    overflow-x: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    margin: 0; color: var(--ink); font-family: Georgia, "Times New Roman", serif;
+    background: radial-gradient(circle at 14% 10%, rgba(86,150,78,.25), transparent 30%),
+      radial-gradient(circle at 82% 6%, rgba(56,143,207,.20), transparent 32%),
+      linear-gradient(180deg, #f7d88a 0%, #d89f4d 100%);
   }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar {
-    display: none;
+  a { color: #174f78; font-weight: 700; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .page { width: min(1320px, calc(100% - 28px)); margin: 0 auto; padding: 24px 0 56px; }
+  .hero, .toc, .section { background: var(--panel); border: 2px solid var(--line); box-shadow: 0 18px 42px var(--shadow); }
+  .hero {
+    min-height: 420px; padding: clamp(24px, 4vw, 48px); display: grid; align-items: end;
+    background: linear-gradient(180deg, rgba(30,50,25,.02), rgba(55,31,12,.48)), url("../assets/images/menu/menu_bg.png") center/cover;
+    color: #fff9df; text-shadow: 0 3px 9px rgba(0,0,0,.75);
   }
-
-  .ascii-rail {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: var(--ascii-rail-width);
-    overflow: hidden;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.62) 18%, rgba(0, 0, 0, 0.78) 100%);
-    z-index: 3;
-  }
-
-  .ascii-rail::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.035) 0,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    opacity: 0.18;
-  }
-
-  .ascii-rail-left {
-    left: 0;
-  }
-
-  .ascii-rail-right {
-    right: 0;
-  }
-
-  .ascii-rail-right pre {
-    text-align: right;
-  }
-
-  .ascii-rail pre {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-family: "Courier New", Courier, monospace;
-    font-size: 9px;
-    line-height: 1.1;
-    letter-spacing: 0.02em;
-    user-select: none;
-    overflow: hidden;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.03) 0,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    opacity: 0.14;
-  }
-
-  main {
-    width: min(100%, 1120px);
-    margin: 0 auto;
-    padding: 40px 18px 64px;
-    position: relative;
-    z-index: 5;
-  }
-
-  h1,
-  h2,
-  h3,
-  p,
-  ul,
-  li,
-  footer,
-  pre {
-    margin: 0;
-  }
-
-  header,
-  .intro,
-  footer {
-    text-align: center;
-  }
-
-  h1 {
-    font-family: "Old London", serif;
-    font-size: clamp(1.9rem, 5.5vw, 3rem);
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-  }
-
-  .subtitle {
-    margin-top: 14px;
-    color: var(--muted);
-  }
-
-  .separator {
-    width: min(100%, 620px);
-    margin: 18px auto;
-    color: var(--line);
-    letter-spacing: 0.08em;
-    white-space: nowrap;
-    overflow: hidden;
-    user-select: none;
-  }
-
-  .intro {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 34px;
-  }
-
-  .intro-line::before,
-  .intro-line::after {
-    content: "*";
-    margin: 0 10px;
-    color: var(--muted);
-  }
-
-  .quick-nav {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin: 26px 0 40px;
-  }
-
-  .quick-nav a,
-  .back-link {
-    color: var(--text);
-    text-decoration: none;
-    border: 1px solid var(--line);
-    padding: 10px 14px;
-    background: #0b0b0b;
-    font-weight: bold;
-    letter-spacing: 0.04em;
-  }
-
-  .top-home {
-    display: flex;
-    justify-content: center;
-    margin-top: 24px;
-  }
-
-  .section-back {
-    margin-top: 18px;
-    text-align: center;
-  }
-
-  .section-back a {
-    color: var(--muted);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--line);
-    padding-bottom: 2px;
-  }
-
-  .section-back a:hover,
-  .section-back a:focus-visible {
-    color: var(--text);
-    outline: none;
-  }
-
-  .quick-nav a:hover,
-  .quick-nav a:focus-visible,
-  .back-link:hover,
-  .back-link:focus-visible {
-    background: #1c1c1c;
-    outline: none;
-  }
-
-  .wiki-section {
-    margin-top: 42px;
-  }
-
-  .section-title {
-    text-align: center;
-    font-size: 1.2rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .section-grid {
-    display: grid;
-    gap: 22px;
-    margin-top: 22px;
-  }
-
-  .block {
-    border: 1px solid var(--line);
-    padding: 18px 16px;
-    background: rgba(255, 255, 255, 0.01);
-  }
-
-  .block h3 {
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 1rem;
-  }
-
-  .block p + p,
-  .block ul + p,
-  .block p + ul,
-  .block ul + ul,
-  .catalog + .catalog,
-  .mini + .mini {
-    margin-top: 12px;
-  }
-
-  ul {
-    padding-left: 18px;
-  }
-
-  li + li {
-    margin-top: 8px;
-  }
-
-  .catalog {
-    border-top: 1px dashed #777777;
-    padding-top: 12px;
-  }
-
-  .table-head,
-  .table-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(90px, 0.8fr) minmax(90px, 0.8fr) minmax(0, 1fr);
-    gap: 12px;
-    align-items: start;
-  }
-
-  .table-head {
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-
-  .table-row {
-    border-top: 1px dashed #777777;
-    padding-top: 12px;
-  }
-
-  .table-row strong {
-    margin-bottom: 0;
-  }
-
-  .table-note {
-    color: var(--muted);
-  }
-
-  .catalog strong,
-  .mini strong {
-    display: inline-block;
-    margin-bottom: 4px;
-  }
-
-  .muted {
-    color: var(--muted);
-  }
-
-  footer {
-    margin-top: 46px;
-    padding-top: 18px;
-    color: var(--muted);
-  }
-
-  @media (min-width: 860px) {
-    .section-grid.two {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .section-grid.three {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 680px) {
-    .ascii-rail {
-      width: 136px;
-    }
-
-    .ascii-rail pre {
-      font-size: 8px;
-    }
-
-    .table-head,
-    .table-row {
-      grid-template-columns: 1fr;
-      gap: 6px;
-    }
-
-    .table-head {
-      display: none;
-    }
-  }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2 { font-family: "Old London", Georgia, serif; line-height: .95; letter-spacing: .035em; }
+  h1 { font-size: clamp(3rem, 8vw, 6.4rem); }
+  h2 { font-size: clamp(2rem, 5vw, 3.7rem); }
+  h3 { margin-bottom: 10px; font-size: 1.02rem; text-transform: uppercase; letter-spacing: .06em; color: #432f16; }
+  h3 span { font-family: "Courier New", monospace; font-size: .8rem; color: var(--muted); text-transform: none; }
+  .kicker { font-family: "Courier New", monospace; text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; }
+  .hero p:last-child { max-width: 760px; margin-top: 14px; font-size: 1.18rem; line-height: 1.55; }
+  .toc { margin-top: 18px; padding: 14px; display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; }
+  .toc a, .tag { border: 1px solid rgba(92,60,22,.45); background: rgba(255,248,219,.72); color: var(--ink); padding: 7px 10px; font-family: "Courier New", monospace; font-size: .86rem; }
+  .section { margin-top: 18px; padding: clamp(18px, 3vw, 30px); }
+  .section-title { border-bottom: 2px solid var(--line); padding-bottom: 10px; margin-bottom: 18px; display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .section-title span { color: var(--muted); font-family: "Courier New", monospace; }
+  .lead { max-width: 940px; font-size: 1.08rem; line-height: 1.65; }
+  .grid { display: grid; gap: 14px; margin-top: 16px; }
+  .grid.two { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid.one { grid-template-columns: 1fr; }
+  .card { background: rgba(255,253,234,.76); border: 1px solid rgba(106,70,26,.42); padding: 15px; overflow: hidden; }
+  .card p, li { line-height: 1.52; }
+  .card + .card { margin-top: 0; }
+  ul { margin: 8px 0 0; padding-left: 20px; }
+  .table-scroll { width: 100%; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; }
+  th, td { border-top: 1px solid rgba(106,70,26,.36); padding: 8px 7px; text-align: left; vertical-align: top; line-height: 1.35; }
+  th { font-family: "Courier New", monospace; text-transform: uppercase; font-size: .76rem; color: #574019; }
+  code { color: #134c70; font-weight: 700; }
+  .footer { text-align: center; margin-top: 22px; color: #3b2b15; }
 </style>
 </head>
 <body id="top">
-<div class="ascii-rail ascii-rail-left" aria-hidden="true"><pre id="ascii-left"></pre></div>
-<div class="ascii-rail ascii-rail-right" aria-hidden="true"><pre id="ascii-right"></pre></div>
-<main>
-  <header>
-    <h1>The Forest Fools Wiki</h1>
-    <!-- <p class="subtitle">game database in terminal style</p> -->
+<div class="page">
+  <header class="hero">
+    <div>
+      <p class="kicker">Wiki complet du projet</p>
+      <h1>The Forest Fools</h1>
+      <p>Base de donnees du jeu : lore, dialogues, quetes, cartes, lieux, items, equipements, sorts, monstres, loot et commandes.</p>
+    </div>
   </header>
-
-  <p class="separator">====================================================================================================================</p>
-
-  <section class="intro" aria-label="Introduction wiki">
-    <p class="intro-line">dark fantasy rpg played in a terminal</p>
-    <p class="intro-line">10x10 world, hidden locations and zone-based encounters</p>
-    <p class="intro-line">main objective: take the king's quest and slay the ancient dragon</p>
-  </section>
-
-  <nav class="quick-nav" id="sommaire" aria-label="Quick navigation">
-    <a href="#objets">items</a>
-    <a href="#ennemis">enemies</a>
-    <a href="#monde">world</a>
-    <a href="#lieux">locations</a>
-    <a href="#quetes">quests</a>
-    <a href="#personnages">characters</a>
-    <a href="#systemes">systems</a>
-  </nav>
-
-  <div class="top-home">
-    <a class="back-link" href="index.html">back to main page</a>
-  </div>
-
-  <section class="wiki-section" id="objets">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Items</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Weapons</h3>
-        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
-        <div class="table-row"><strong>Rusty Sword</strong><span>5 gold</span><span>2 gold</span><span class="table-note">ATK +3</span></div>
-        <div class="table-row"><strong>Iron Dagger</strong><span>12 gold</span><span>6 gold</span><span class="table-note">ATK +5</span></div>
-        <div class="table-row"><strong>Iron Sword</strong><span>25 gold</span><span>12 gold</span><span class="table-note">ATK +8</span></div>
-        <div class="table-row"><strong>Steel Sword</strong><span>50 gold</span><span>25 gold</span><span class="table-note">ATK +12</span></div>
-        <div class="table-row"><strong>War Hammer</strong><span>65 gold</span><span>32 gold</span><span class="table-note">ATK +14</span></div>
-        <div class="table-row"><strong>Dark Blade</strong><span>120 gold</span><span>60 gold</span><span class="table-note">ATK +18</span></div>
-        <div class="table-row"><strong>Silver Longsword</strong><span>200 gold</span><span>100 gold</span><span class="table-note">ATK +22</span></div>
-        <div class="table-row"><strong>Cursed Greatsword</strong><span>350 gold</span><span>175 gold</span><span class="table-note">ATK +28</span></div>
-        <div class="table-row"><strong>Dragon Slayer Blade</strong><span>1000 gold</span><span>500 gold</span><span class="table-note">ATK +35</span></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Armor</h3>
-        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
-        <div class="table-row"><strong>Cloth Rags</strong><span>3 gold</span><span>1 gold</span><span class="table-note">DEF +1</span></div>
-        <div class="table-row"><strong>Leather Vest</strong><span>15 gold</span><span>7 gold</span><span class="table-note">DEF +4 | Dodge 10%</span></div>
-        <div class="table-row"><strong>Chainmail</strong><span>45 gold</span><span>22 gold</span><span class="table-note">DEF +8</span></div>
-        <div class="table-row"><strong>Plate Armor</strong><span>100 gold</span><span>50 gold</span><span class="table-note">DEF +14</span></div>
-        <div class="table-row"><strong>Dark Plate</strong><span>250 gold</span><span>125 gold</span><span class="table-note">DEF +20</span></div>
-        <div class="table-row"><strong>Shadow Cloak</strong><span>80 gold</span><span>40 gold</span><span class="table-note">DEF +10 | Dodge 20%</span></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Consumables</h3>
-        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
-        <div class="table-row"><strong>Small Potion</strong><span>8 gold</span><span>4 gold</span><span class="table-note">Heal 25</span></div>
-        <div class="table-row"><strong>Medium Potion</strong><span>20 gold</span><span>10 gold</span><span class="table-note">Heal 50</span></div>
-        <div class="table-row"><strong>Large Potion</strong><span>45 gold</span><span>22 gold</span><span class="table-note">Heal 100</span></div>
-        <div class="table-row"><strong>Elixir</strong><span>100 gold</span><span>50 gold</span><span class="table-note">Heal 200</span></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Miscellaneous Items</h3>
-        <div class="table-head"><span>Name</span><span>Buy</span><span>Sell</span><span>Stats</span></div>
-        <div class="table-row"><strong>Old Key</strong><span>2 gold</span><span>1 gold</span><span class="table-note">Opens locked chest in castle treasure_room (consumed on use)</span></div>
-        <div class="table-row"><strong>Skull Amulet</strong><span>30 gold</span><span>15 gold</span><span class="table-note">-</span></div>
-        <div class="table-row"><strong>Raven Feather</strong><span>1 gold</span><span>1 gold</span><span class="table-note">-</span></div>
-        <div class="table-row"><strong>Golden Chalice</strong><span>75 gold</span><span>37 gold</span><span class="table-note">-</span></div>
-        <div class="table-row"><strong>Torn Scroll</strong><span>5 gold</span><span>2 gold</span><span class="table-note">-</span></div>
-        <div class="table-row"><strong>Dark Gem</strong><span>60 gold</span><span>30 gold</span><span class="table-note">-</span></div>
-        <div class="table-row"><strong>Iron Ring</strong><span>10 gold</span><span>5 gold</span><span class="table-note">-</span></div>
-      </article>
+  <nav class="toc" aria-label="Sommaire"><a href="#lore">Lore</a><a href="#intro">Intro</a><a href="#progression">Progression</a><a href="#quetes">Quetes</a><a href="#maps">Cartes</a><a href="#locations">Lieux/Textes</a><a href="#dialogues">Dialogues</a><a href="#items">Items</a><a href="#spells">Sorts</a><a href="#monsters">Monstres</a><a href="#loot">Loot</a><a href="#characters">Persos</a><a href="#commands">Commandes</a><a href="index.html">Accueil</a></nav>
+  
+  <section class="section" id="lore">
+    <div class="section-title"><h2>Lore</h2><span>mythe principal</span></div>
+    
+    <p class="lead">The Forest Fools raconte un royaume lumineux qui a oublie une promesse ancienne. Vaelrith, le Dragon des Vieilles Racines, n'est pas seulement un monstre : son retour signale que le Premier Serment a ete brise.</p>
+    <div class="grid two">
+      <article class="card"><h3>Le Premier Serment</h3><p>Les humains, les druides de Greenmarch, les clans lezards de Scalefen et les gardiens d'Ashenreach avaient promis de proteger les routes, les forets, les eaux et la pierre noire.</p></article>
+      <article class="card"><h3>Les Forest Fools</h3><p>Scouts, wanderers and reckless adventurers. People call them fools because they enter cursed forests and lost roads where soldiers refuse to go.</p></article>
     </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+
   </section>
 
-  <section class="wiki-section" id="ennemis">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Enemies</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Forest (level 1+)</h3>
-        <div class="catalog"><strong>Giant Rat</strong><p>15 HP | ATK 3 | gold 2-6 | XP 6</p></div>
-        <div class="catalog"><strong>Wild Crow</strong><p>12 HP | ATK 2 | gold 1-4 | XP 4</p></div>
-        <div class="catalog"><strong>Plague Rat Swarm</strong><p>20 HP | ATK 4 | gold 2-8 | XP 8</p></div>
-        <div class="catalog"><strong>Feral Boar</strong><p>25 HP | ATK 5 | gold 3-8 | XP 10</p></div>
-        <div class="catalog"><strong>Giant Spider</strong><p>22 HP | ATK 4 | gold 2-7 | XP 7</p></div>
-        <div class="catalog"><strong>Goblin Scavenger</strong><p>18 HP | ATK 3 | gold 2-6 | XP 6</p></div>
-        <div class="catalog"><strong>Venomous Snake</strong><p>14 HP | ATK 5 | gold 2-5 | XP 5</p></div>
-        <p class="muted">zone tier 1 — easy creatures found in forests</p>
-      </article>
+  <section class="section" id="intro">
+    <div class="section-title"><h2>Intro cinematique</h2><span>textes et assets</span></div>
+    <div class="table-scroll"><table><thead><tr><th>Key</th><th>Title</th><th>Text</th><th>Asset</th></tr></thead><tbody><tr><td><code>01_valley</code></td><td>The Quiet Valley</td><td>The valley was peaceful. / Green fields stretched beneath the castle. / No one believed the old legends anymore.</td><td><code>assets/images/intro/01_valley.png</code></td></tr><tr><td><code>02_burning_road</code></td><td>The First Sign</td><td>Then the roads began to burn. / No army was seen. / Only smoke rising beyond the hills.</td><td><code>assets/images/intro/02_burning_road.png</code></td></tr><tr><td><code>03_silent_towers</code></td><td>Silent Towers</td><td>The watchtowers fell silent. / No bells rang. / No guards returned.</td><td><code>assets/images/intro/03_silent_towers.png</code></td></tr><tr><td><code>04_council</code></td><td>The King&#x27;s Question</td><td>The king did not ask for war. / He asked for someone brave enough to enter the forest. / Or foolish enough.</td><td><code>assets/images/intro/04_council.png</code></td></tr><tr><td><code>05_forest_fools</code></td><td>Forest Fools</td><td>They called them Forest Fools. / Scouts, wanderers, forgotten names. / The ones who walked where kingdoms ended.</td><td><code>assets/images/intro/05_forest_fools.png</code></td></tr></tbody></table></div>
+  </section>
 
-      <article class="block">
-        <h3>Subcategory: Cave (level 3+)</h3>
-        <div class="catalog"><strong>Cave Wolf</strong><p>35 HP | ATK 7 | gold 5-15 | XP 15</p></div>
-        <div class="catalog"><strong>Brown Bear</strong><p>50 HP | ATK 9 | gold 8-20 | XP 20</p></div>
-        <div class="catalog"><strong>Cave Bat Swarm</strong><p>25 HP | ATK 6 | gold 4-12 | XP 12</p></div>
-        <div class="catalog"><strong>Rock Troll</strong><p>60 HP | ATK 10 | gold 10-25 | XP 22</p></div>
-        <div class="catalog"><strong>Shadow Stalker</strong><p>40 HP | ATK 8 | gold 6-18 | XP 18</p></div>
-        <div class="catalog"><strong>Undead Miner</strong><p>30 HP | ATK 7 | gold 5-15 | XP 14</p></div>
-        <p class="muted">zone tier 2 — dangerous predators lurking in caves</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Castle (level 6+)</h3>
-        <div class="catalog"><strong>Living Armor</strong><p>60 HP | ATK 12 | gold 12-30 | XP 30</p></div>
-        <div class="catalog"><strong>Haunted Knight</strong><p>70 HP | ATK 14 | gold 15-35 | XP 35</p></div>
-        <div class="catalog"><strong>Hollow Wraith</strong><p>50 HP | ATK 11 | gold 10-28 | XP 28</p></div>
-        <div class="catalog"><strong>Cursed Sentinel</strong><p>65 HP | ATK 13 | gold 12-32 | XP 32</p></div>
-        <div class="catalog"><strong>Spectral Guard</strong><p>55 HP | ATK 12 | gold 10-28 | XP 28</p></div>
-        <div class="catalog"><strong>Gargoyle</strong><p>75 HP | ATK 15 | gold 15-40 | XP 38</p></div>
-        <p class="muted">zone tier 3 — animated armors and spectral defenders of ruined fortresses</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Dungeon (level 9+)</h3>
-        <div class="catalog"><strong>Cursed Knight</strong><p>80 HP | ATK 16 | gold 18-45 | XP 45</p></div>
-        <div class="catalog"><strong>Tomb Guardian</strong><p>90 HP | ATK 18 | gold 20-50 | XP 50</p></div>
-        <div class="catalog"><strong>Dark Sorcerer</strong><p>70 HP | ATK 20 | gold 25-60 | XP 55</p></div>
-        <div class="catalog"><strong>Bone Colossus</strong><p>120 HP | ATK 22 | gold 30-70 | XP 65</p></div>
-        <div class="catalog"><strong>Undead Priest</strong><p>65 HP | ATK 17 | gold 18-45 | XP 45</p></div>
-        <div class="catalog"><strong>Abyssal Demon</strong><p>100 HP | ATK 24 | gold 30-80 | XP 70</p></div>
-        <p class="muted">zone tier 4 — the most powerful abominations in the depths</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Boss</h3>
-        <div class="catalog"><strong>The Ancient Dragon</strong><p>350 HP | 40 ATK (fixed) | gold 100-250 | XP 500</p></div>
-        <div class="catalog"><strong>Behavior</strong><p>special attack inferno breath with 30% chance and double damage</p></div>
-        <div class="catalog"><strong>Combat Location</strong><p>Dragon Lair &gt; nest</p></div>
-        <div class="catalog"><strong>Notable Condition</strong><p>the dragon fight is standalone and marks the main quest as completed</p></div>
-        <div class="catalog"><strong>Reward</strong><p>Dragon Slayer Blade + gold + XP</p></div>
-      </article>
+  <section class="section" id="progression">
+    <div class="section-title"><h2>Progression</h2><span>structure actuelle</span></div>
+    
+    <div class="grid two">
+      <article class="card"><h3>Mosswake</h3><p>Reach level 2, reveal Slime Hollow, defeat Slime King, gain Harbor Pass, sail to Crownport.</p></article>
+      <article class="card"><h3>Crownvale</h3><p>Speak to King Rowen, defeat Hollow Baron, gain Greenmarch Pass.</p></article>
+      <article class="card"><h3>Greenmarch</h3><p>Speak to Elder Maelis, defeat Thornwell Warden, gain Scalefen Pass.</p></article>
+      <article class="card"><h3>Scalefen / Ashenreach</h3><p>Help Matriarch Sytha, defeat Mirejaw Matriarch, reach Highpass, follow the dragon trail.</p></article>
     </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+
   </section>
 
-  <section class="wiki-section" id="monde">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: World</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Map</h3>
-        <ul>
-          <li>world generated on a 10x10 grid, columns A to J and rows 1 to 10</li>
-          <li>the capital is always placed at E5</li>
-          <li>other locations are placed randomly each game</li>
-          <li>hidden locations remain unrevealed until a dialogue or event reveals them</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Location Distribution</h3>
-        <ul>
-          <li>forest x3</li>
-          <li>village x3</li>
-          <li>cave x2</li>
-          <li>castle x2</li>
-          <li>dungeon x2</li>
-          <li>port x? (on sand tiles)</li>
-          <li>dragon_lair x1</li>
-          <li>the rest of the grid is composed of plains</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Terrain</h3>
-        <ul>
-          <li>water (blue) — borders of the map, impassable</li>
-          <li>sand (yellow) — coastal tiles between water and land</li>
-          <li>grass (green / dark green) — interior of the map</li>
-        </ul>
-        <p class="muted">added in patch 1.0.1</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Map Symbols</h3>
-        <ul>
-          <li>. = plains</li>
-          <li>T = forest</li>
-          <li>V = village</li>
-          <li>O = cave</li>
-          <li># = castle</li>
-          <li>X = dungeon</li>
-          <li>K = capital</li>
-          <li>D = dragon_lair</li>
-          <li>P = port</li>
-          <li>~ = water (impassable)</li>
-          <li>: = sand</li>
-        </ul>
-      </article>
-    </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+  <section class="section" id="quetes">
+    <div class="section-title"><h2>Quetes</h2><span>quetes principales et villageoises prevues</span></div>
+    <div class="grid one"><article class="card"><h3>Mosswake Isle - Harbor Pass</h3><div class="table-scroll"><table><thead><tr><th>Quest</th><th>NPC</th><th>Objective</th><th>Reward</th></tr></thead><tbody><tr><td>Embargo de Greenhollow</td><td>Mayor Aldren</td><td>Reach level 2, reveal Slime Hollow, defeat the Slime King.</td><td>Harbor Pass</td></tr><tr><td>La lumiere du phare</td><td>Nora</td><td>Find the lighthouse lens near the old shore.</td><td>Old lore clue</td></tr><tr><td>Le filet de Tovin</td><td>Tovin</td><td>Recover the lost fishing net near the rocks.</td><td>Fisher Hook Blade / gold</td></tr><tr><td>Herbes pour Ameline</td><td>Sister Ameline</td><td>Gather herbs in Old Fern Forest.</td><td>Potions and healing</td></tr></tbody></table></div></article><article class="card"><h3>Crownvale - Greenmarch Pass</h3><div class="table-scroll"><table><thead><tr><th>Quest</th><th>NPC</th><th>Objective</th><th>Reward</th></tr></thead><tbody><tr><td>La route de l&#x27;Est</td><td>King Rowen</td><td>Investigate Crownvale Keep.</td><td>Main regional objective</td></tr><tr><td>Patrouille disparue</td><td>Captain Valen</td><td>Find the missing patrol in Northwatch Woods.</td><td>Militia gear</td></tr><tr><td>Archives cachees</td><td>Archivist Odran</td><td>Recover a page of the First Oath.</td><td>Codex entry</td></tr><tr><td>Les moutons de Fairmeadow</td><td>Maelle</td><td>Save the flock from Bramble Hounds.</td><td>Gold / Fairmeadow reputation</td></tr><tr><td>Serment du Baron</td><td>King Rowen</td><td>Defeat the Hollow Baron.</td><td>Greenmarch Pass</td></tr></tbody></table></div></article><article class="card"><h3>Greenmarch - Scalefen Pass</h3><div class="table-scroll"><table><thead><tr><th>Quest</th><th>NPC</th><th>Objective</th><th>Reward</th></tr></thead><tbody><tr><td>La foret qui etouffe</td><td>Elder Maelis</td><td>Understand why Thornwell is choking the paths.</td><td>Main regional objective</td></tr><tr><td>Chemin des rodeurs</td><td>Eldrin</td><td>Follow ranger marks to Deep Briar.</td><td>Map reveal / Briar Knife</td></tr><tr><td>L&#x27;enfant perdu</td><td>Lost Child</td><td>Rescue a child from the old clearings.</td><td>Eldergrove reputation</td></tr><tr><td>La racine qui parle</td><td>Root Speaker</td><td>Answer the root riddle.</td><td>First Oath lore</td></tr><tr><td>Thornwell</td><td>Elder Maelis</td><td>Defeat the Thornwell Warden.</td><td>Scalefen Pass</td></tr></tbody></table></div></article><article class="card"><h3>Scalefen - Ashenreach Pass</h3><div class="table-scroll"><table><thead><tr><th>Quest</th><th>NPC</th><th>Objective</th><th>Reward</th></tr></thead><tbody><tr><td>Les armes rendues par l&#x27;eau</td><td>Matriarch Sytha</td><td>Investigate the missing scouts.</td><td>Main regional objective</td></tr><tr><td>Rite des roseaux</td><td>Sszar</td><td>Bring clear water, black mud and white reed.</td><td>Marsh lore</td></tr><tr><td>Chasse dans Reedmire</td><td>Kraxa</td><td>Hunt Marsh Striders or Mudscale Brutes.</td><td>Reedscale gear</td></tr><tr><td>Le totem qui ment</td><td>Speaking Totem</td><td>Solve the totem riddle.</td><td>Sunken Grotto reveal</td></tr><tr><td>Mirejaw</td><td>Matriarch Sytha</td><td>Defeat the Mirejaw Matriarch.</td><td>Ashenreach Pass</td></tr></tbody></table></div></article><article class="card"><h3>Ashenreach - Final</h3><div class="table-scroll"><table><thead><tr><th>Quest</th><th>NPC</th><th>Objective</th><th>Reward</th></tr></thead><tbody><tr><td>Highpass</td><td>Highpass Scout</td><td>Follow the ash winds toward the dragon trail.</td><td>Dragon quest active</td></tr><tr><td>La pierre noire</td><td>Thorek</td><td>Explore the old mine and learn what was awakened.</td><td>Black stone lore</td></tr><tr><td>Forge des hauteurs</td><td>Master Borun</td><td>Bring black ore and ash fragments.</td><td>High tier gear upgrade</td></tr><tr><td>Relique du serment</td><td>Royal Archaeologist</td><td>Recover an oath relic at Broken Spire.</td><td>Vaelrith truth</td></tr><tr><td>Vaelrith</td><td>Dragon</td><td>Reach the Dragon Lair and survive the final encounter.</td><td>Ending / Dragon Slayer Blade</td></tr></tbody></table></div></article></div>
   </section>
 
-  <section class="wiki-section" id="lieux">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Locations</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Plains</h3>
-        <p>empty and desolate terrain. Plains serve as transition tiles between special locations.</p>
-        <p class="muted">atmosphere: grey moors, mist, dead trees, bones and a feeling of being watched.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Forest</h3>
-        <p>ancient, suffocating and very dark woods. This is a possible combat location.</p>
-        <ul>
-          <li>clearing</li>
-          <li>ruins</li>
-          <li>stream</li>
-        </ul>
-        <p class="muted">atmosphere: twisted roots, glowing mushrooms, whispers in the black pines.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Village</h3>
-        <p>small gothic hamlet with merchants and rumor NPCs.</p>
-        <ul>
-          <li>merchant</li>
-          <li>blacksmith</li>
-          <li>tavern</li>
-          <li>chapel</li>
-          <li>square</li>
-        </ul>
-        <p class="muted">atmosphere: leaning houses, cracked bell, closed doors and diffuse fear.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Cave</h3>
-        <p>cold and damp cave. Combat and search location.</p>
-        <ul>
-          <li>entrance</li>
-          <li>corridor</li>
-          <li>crypt</li>
-          <li>altar</li>
-          <li>treasure_room</li>
-        </ul>
-        <p class="muted">atmosphere: stale air, water drops, claw marks and old extinguished torches.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Castle</h3>
-        <p>ruined fortress, black and shrouded in fog. Combat location.</p>
-        <ul>
-          <li>courtyard</li>
-          <li>great_hall</li>
-          <li>tower</li>
-          <li>dungeon_cells</li>
-          <li>throne_room</li>
-          <li>treasure_room — locked chest requiring an Old Key (80-200 gold + powerful gear)</li>
-        </ul>
-        <p class="muted">atmosphere: broken towers, crows, rubble, dusty throne room.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Dungeon</h3>
-        <p>descent into darkness with iron doors, chains and unknown language engraved in the walls.</p>
-        <ul>
-          <li>entrance</li>
-          <li>corridor</li>
-          <li>crypt</li>
-          <li>altar</li>
-          <li>treasure_room</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Capital</h3>
-        <p>heart of the kingdom and player starting point. The capital houses the king and a merchant.</p>
-        <ul>
-          <li>courtyard</li>
-          <li>great_hall</li>
-          <li>throne_room</li>
-          <li>barracks</li>
-          <li>merchant</li>
-        </ul>
-        <p class="muted">atmosphere: ancient walls, royal palace and streets full of soldiers and merchants.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Port</h3>
-        <p>coastal settlement built on sand tiles. Features a dock, a tavern and a merchant.</p>
-        <ul>
-          <li>dock — docked trawler, Explorer selling the full map (200 gold)</li>
-          <li>tavern — sleep for 10 gold (restores HP, grants XP, resets merchant stock)</li>
-          <li>merchant — equipment and consumables</li>
-        </ul>
-        <p class="muted">atmosphere: salt wind, creaking wood, fishnets drying under grey clouds.</p>
-        <p class="muted">added in patch 1.0.1</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Dragon Lair</h3>
-        <p>immense cavern blackened by fire. Final location of the main quest.</p>
-        <ul>
-          <li>entrance</li>
-          <li>tunnel</li>
-          <li>hoard</li>
-          <li>nest</li>
-        </ul>
-        <p class="muted">atmosphere: sulfur, bones, claw marks and breathing of an ancient creature.</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Sub-locations</h3>
-        <ul>
-          <li>merchant : dusty shop with weapons, potions and curiosities</li>
-          <li>blacksmith : glowing forge and scarred craftsman</li>
-          <li>tavern : smoky room, silent clientele and rumors</li>
-          <li>chapel : small cold and cracked place of prayer</li>
-          <li>square : empty square with well and gibbet</li>
-          <li>entrance : narrow entrance with old torches</li>
-          <li>corridor : low and damp corridor</li>
-          <li>crypt : open sarcophagi and smell of decay</li>
-          <li>altar : black altar and engraved symbols</li>
-          <li>treasure_room : chests, dust and cobwebs (in castles: locked chest requiring Old Key)</li>
-          <li>courtyard : courtyard drowned in fog</li>
-          <li>great_hall : great hall collapsed under the moon</li>
-          <li>tower : spiral staircase and icy wind</li>
-          <li>dungeon_cells : empty cells and chained skeleton</li>
-          <li>throne_room : throne room of black stone</li>
-          <li>clearing : pale clearing with mushrooms in a circle</li>
-          <li>ruins : destroyed foundations and overgrown remains</li>
-          <li>stream : cold stream with a taste of iron</li>
-          <li>barracks : soldier chambers where blades are sharpened</li>
-          <li>tunnel : immense gallery clawed from floor to ceiling</li>
-          <li>hoard : room of draconic treasures</li>
-          <li>nest : nest of bone and charred stone where the dragon rests</li>
-        </ul>
-      </article>
-    </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+  <section class="section" id="maps">
+    <div class="section-title"><h2>Cartes</h2><span>maps fixes, coordonnees et points d&#x27;interet</span></div>
+    <div class="grid one"><article class="card"><h3>Mosswake Isle</h3><p><span class="tag">key mosswake</span><span class="tag">grid 10x10</span><span class="tag">start (&#x27;E&#x27;, 5)</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>E5</td><td><code>greenhollow</code></td><td>Greenhollow Village</td><td></td><td></td><td>True</td></tr><tr><td>D6</td><td><code>old_fern_forest</code></td><td>Old Fern Forest</td><td></td><td></td><td>True</td></tr><tr><td>E7</td><td><code>mossroot_forest</code></td><td>Mossroot Forest</td><td></td><td></td><td>True</td></tr><tr><td>F8</td><td><code>slime_hollow</code></td><td>Slime Hollow</td><td>slime_king</td><td></td><td>False</td></tr><tr><td>G5</td><td><code>southwake_port</code></td><td>Southwake Port</td><td></td><td></td><td>False</td></tr></tbody></table></div></article><article class="card"><h3>Mainland of Elarion</h3><p><span class="tag">key continent</span><span class="tag">grid 52x52</span><span class="tag">start (&#x27;D&#x27;, 23)</span><span class="tag">overview only</span><span class="tag">no loot tier</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>D23</td><td><code>crownport</code></td><td>Crownport</td><td></td><td></td><td>True</td></tr><tr><td>M10</td><td><code>crown_capital</code></td><td>Crownvale Capital</td><td></td><td></td><td>False</td></tr><tr><td>H14</td><td><code>crownvale_keep</code></td><td>Crownvale Keep</td><td></td><td></td><td>False</td></tr><tr><td>X22</td><td><code>westmere_village</code></td><td>Westmere Village</td><td></td><td></td><td>False</td></tr><tr><td>AJ9</td><td><code>greenmarch_village</code></td><td>Greenmarch Village</td><td></td><td></td><td>False</td></tr><tr><td>M32</td><td><code>scalefen_marshhold</code></td><td>Scalefen Marshhold</td><td></td><td></td><td>False</td></tr><tr><td>F43</td><td><code>lowbridge_village</code></td><td>Lowbridge Village</td><td></td><td></td><td>False</td></tr><tr><td>AM42</td><td><code>ashen_dragon_lair</code></td><td>Ashenreach Dragon Lair</td><td></td><td></td><td>False</td></tr></tbody></table></div></article><article class="card"><h3>Crownvale</h3><p><span class="tag">key crownvale</span><span class="tag">grid 26x26</span><span class="tag">start (&#x27;D&#x27;, 23)</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>D23</td><td><code>crownport</code></td><td>Crownport</td><td></td><td></td><td>True</td></tr><tr><td>M12</td><td><code>crown_capital</code></td><td>Crownvale Capital</td><td></td><td></td><td>True</td></tr><tr><td>H9</td><td><code>crownvale_keep</code></td><td>Crownvale Keep</td><td>hollow_baron</td><td></td><td>False</td></tr><tr><td>Q17</td><td><code>fairmeadow</code></td><td>Fairmeadow Village</td><td></td><td></td><td>False</td></tr><tr><td>V4</td><td><code>northwatch_woods</code></td><td>Northwatch Woods</td><td></td><td>crownvale_woods</td><td>False</td></tr><tr><td>S20</td><td><code>sunmere_woods</code></td><td>Sunmere Woods</td><td></td><td>crownvale_woods</td><td>False</td></tr></tbody></table></div></article><article class="card"><h3>Greenmarch</h3><p><span class="tag">key greenmarch</span><span class="tag">grid 26x26</span><span class="tag">start (&#x27;B&#x27;, 13)</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>B13</td><td><code>greenmarch_westwood</code></td><td>Westwood Gate</td><td></td><td></td><td>True</td></tr><tr><td>M7</td><td><code>eldergrove</code></td><td>Eldergrove</td><td></td><td></td><td>False</td></tr><tr><td>J15</td><td><code>rootglass_cave</code></td><td>Rootglass Cave</td><td></td><td></td><td>False</td></tr><tr><td>R19</td><td><code>deep_briar</code></td><td>Deep Briar</td><td></td><td>greenmarch_forest</td><td>False</td></tr><tr><td>W10</td><td><code>thornwell_ruins</code></td><td>Thornwell Ruins</td><td>thornwell_warden</td><td></td><td>False</td></tr></tbody></table></div></article><article class="card"><h3>Scalefen</h3><p><span class="tag">key scalefen</span><span class="tag">grid 26x26</span><span class="tag">start (&#x27;B&#x27;, 13)</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>B13</td><td><code>fenwatch</code></td><td>Fenwatch Village</td><td></td><td></td><td>True</td></tr><tr><td>H18</td><td><code>reedmire</code></td><td>Reedmire</td><td></td><td>scalefen_marsh</td><td>False</td></tr><tr><td>M12</td><td><code>scalefen_marshhold</code></td><td>Scalefen Marshhold</td><td></td><td></td><td>False</td></tr><tr><td>S17</td><td><code>sunken_grotto</code></td><td>Sunken Grotto</td><td>mirejaw_matriarch</td><td></td><td>False</td></tr><tr><td>X8</td><td><code>eastwake_port</code></td><td>Eastwake Port</td><td></td><td></td><td>False</td></tr></tbody></table></div></article><article class="card"><h3>Ashenreach</h3><p><span class="tag">key ashenreach</span><span class="tag">grid 26x26</span><span class="tag">start (&#x27;M&#x27;, 4)</span></p><div class="table-scroll"><table><thead><tr><th>Cell</th><th>Id</th><th>Name</th><th>Boss</th><th>Enemy pool</th><th>Revealed</th></tr></thead><tbody><tr><td>M4</td><td><code>highpass</code></td><td>Highpass</td><td></td><td>ashenreach_wastes</td><td>False</td></tr><tr><td>F18</td><td><code>blackmouth_dungeon</code></td><td>Blackmouth Dungeon</td><td></td><td>ashenreach_wastes</td><td>False</td></tr><tr><td>N13</td><td><code>ash_cavern</code></td><td>Ash Cavern</td><td></td><td>ashenreach_wastes</td><td>False</td></tr><tr><td>T10</td><td><code>broken_spire</code></td><td>Broken Spire</td><td></td><td>ashenreach_wastes</td><td>False</td></tr><tr><td>U20</td><td><code>ashen_dragon_lair</code></td><td>Ashenreach Dragon Lair</td><td></td><td></td><td>False</td></tr></tbody></table></div></article></div>
   </section>
 
-  <section class="wiki-section" id="quetes">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Quests</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Main Quest</h3>
-        <div class="mini"><strong>Name</strong><p>slay the ancient dragon</p></div>
-        <div class="mini"><strong>Quest Giver</strong><p>The King in capital &gt; throne_room</p></div>
-        <div class="mini"><strong>Starting Condition</strong><p>reach level 5 then speak to the king</p></div>
-        <div class="mini"><strong>Effect</strong><p>the king reveals the Dragon Lair position on the map</p></div>
-        <div class="mini"><strong>Objective</strong><p>go to the nest in Dragon Lair and kill The Ancient Dragon</p></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Quest States</h3>
-        <ul>
-          <li><strong>none</strong> : no quest received</li>
-          <li><strong>given</strong> : quest given by the king, dragon still alive</li>
-          <li><strong>completed</strong> : dragon slain, kingdom saved</li>
-        </ul>
-        <p class="muted">king's final dialogue: the player is remembered as a legend.</p>
-      </article>
-    </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+  <section class="section" id="locations">
+    <div class="section-title"><h2>Lieux et textes</h2><span>tous les textes de lieux et sous-lieux</span></div>
+    <div class="grid one"><article class="card"><h3>Tile types and sub-locations</h3><div class="table-scroll"><table><thead><tr><th>Type</th><th>Name</th><th>Symbol</th><th>Sub-locations</th></tr></thead><tbody><tr><td><code>plains</code></td><td>Plains</td><td>.</td><td></td></tr><tr><td><code>forest</code></td><td>Forest</td><td>T</td><td>clearing, ruins, stream</td></tr><tr><td><code>slime_lair</code></td><td>Slime Hollow</td><td>S</td><td>entrance, slime_pool</td></tr><tr><td><code>village</code></td><td>Village</td><td>V</td><td>town_hall, merchant, blacksmith, tavern, chapel, square</td></tr><tr><td><code>cave</code></td><td>Cave</td><td>O</td><td>entrance, corridor, crypt, altar, treasure_room</td></tr><tr><td><code>castle</code></td><td>Castle</td><td>#</td><td>courtyard, great_hall, tower, dungeon_cells, throne_room, treasure_room</td></tr><tr><td><code>dungeon</code></td><td>Dungeon</td><td>X</td><td>entrance, corridor, crypt, altar, treasure_room</td></tr><tr><td><code>capital</code></td><td>Capital</td><td>K</td><td>courtyard, great_hall, throne_room, barracks, merchant, tavern</td></tr><tr><td><code>dragon_lair</code></td><td>Dragon Lair</td><td>D</td><td>entrance, tunnel, hoard, nest</td></tr><tr><td><code>port</code></td><td>Port</td><td>P</td><td>dock, tavern, merchant</td></tr><tr><td><code>water</code></td><td>Water</td><td>~</td><td></td></tr></tbody></table></div></article><article class="card"><h3>Location text: plains</h3><ul><li>An open stretch of grey, wind-swept land. Dead grass sways beneath a sky heavy with iron clouds. The silence is broken only by the distant cry of a raven.</li><li>A barren field stretches endlessly. The earth is cracked and dry. A lone, withered tree stands against the pale horizon like a skeletal hand reaching for the heavens.</li><li>Flat, featureless moorland rolls in every direction. A thin mist clings to the ground. Somewhere far away, a bell tolls slowly.</li><li>The wind howls across desolate plains. Broken wagon wheels and scattered bones suggest travellers once passed this way. None remain.</li><li>A vast emptiness. The grey sky presses down like a stone lid. You feel watched, though nothing stirs.</li></ul></article><article class="card"><h3>Location text: forest</h3><ul><li>Ancient trees crowd together, their gnarled branches intertwined like the fingers of the damned. No sunlight reaches the forest floor. The air smells of rot and damp earth.</li><li>A dense, lightless wood. Twisted roots break through the soil like veins. Strange fungus glows faintly on the bark. Something moves in the canopy above.</li><li>The forest is silent and suffocating. Moss-covered stones form unnatural patterns among the trees. An old path, nearly consumed by undergrowth, leads deeper into the darkness.</li><li>Black pines rise like cathedral pillars into the mist. The ground is carpeted with dead needles. A cold wind carries whispers you cannot quite understand.</li></ul></article><article class="card"><h3>Location text: slime_lair</h3><ul><li>A bright marshy hollow glistens with strange green puddles. The grass squelches underfoot, and little bubbles rise from the mud.</li><li>The hollow is quiet except for soft wet plops from the slime pools. Something large has pressed a path through the reeds.</li></ul></article><article class="card"><h3>Location text: village</h3><ul><li>A small hamlet of crooked timber houses huddles behind a low stone wall. Smoke rises thinly from a few chimneys. The villagers eye you with suspicion and something like fear.</li><li>Ramshackle buildings lean against one another as if exhausted. A chapel bell hangs cracked and silent. Mud lanes wind between shuttered windows and bolted doors.</li><li>A grim settlement. The houses are dark, their thatched roofs sagging. A gallows stands in the village square, its rope swaying in the wind. A dog barks somewhere unseen.</li></ul></article><article class="card"><h3>Location text: cave</h3><ul><li>A yawning hole in the rock face exhales cold, stale air. The darkness inside is absolute. Water drips in a slow, maddening rhythm from somewhere deep within.</li><li>The cave mouth is framed by jagged stone teeth. Scratches and old bloodstains mark the entrance. The smell of damp stone and something worse drifts outward.</li><li>A narrow fissure in a cliff wall opens into blackness. The wind moans as it passes over the entrance. Old torches, long extinguished, are jammed into cracks in the rock.</li></ul></article><article class="card"><h3>Location text: castle</h3><ul><li>A fortress of black stone rises against the sky, its towers broken and overgrown with ivy. The portcullis hangs askew. Crows circle the battlements in endless, silent orbits.</li><li>The castle looms above you, vast and lightless. Arrow slits stare down like hollow eyes. The drawbridge is down but the courtyard beyond is choked with fog and rubble.</li><li>Once a seat of power, this castle is now a ruin. Shattered banners hang from the walls. The great hall&#x27;s roof has collapsed, and moonlight falls on a floor of dust and bones.</li></ul></article><article class="card"><h3>Location text: dungeon</h3><ul><li>Iron-bound doors open onto steps that descend into darkness. The walls are slick with moisture and something darker. Chains rattle faintly below, though no wind stirs them.</li><li>A dungeon entrance, half-hidden by fallen masonry. The air rising from below is foul and warm. Scratches on the walls form words in a language you do not recognise.</li></ul></article><article class="card"><h3>Location text: capital</h3><ul><li>The great capital city rises before you, its towers of pale stone gleaming against the iron sky. Banners bearing the royal sigil snap in the wind above the massive gatehouse. The streets within teem with merchants, soldiers, and the desperate alike.</li><li>Walls of ancient stone encircle the capital, worn but unbroken by centuries of war. The city within is a maze of cobbled streets and tall buildings. At its heart, the royal palace looms above everything.</li></ul></article><article class="card"><h3>Location text: dragon_lair</h3><ul><li>A vast cavern carved into the mountain by claws and fire. The walls are scorched black, and the stench of sulphur is overwhelming. Bones of the unfortunate litter the ground.</li><li>Heat radiates from deep within the lair. The ceiling is lost in smoke and shadow. A low, rhythmic sound echoes through the tunnels -- breathing. Something ancient breathes here.</li></ul></article><article class="card"><h3>Location text: port</h3><ul><li>A weathered harbour of salt-stained stone. Fishing boats bob at their moorings. The air is thick with the smell of brine and tar. Gulls circle overhead, their cries harsh above the crash of waves.</li><li>A small port clings to the coastline. Wooden piers stretch into dark waters. Nets hang drying between lampposts. The wind carries salt and the distant toll of a bell buoy.</li></ul></article><article class="card"><h3>Sub-location text: merchant</h3><ul><li>A cramped shop crammed with dusty wares. The merchant watches you from behind a counter stacked with oddities. Candles gutter in the draught.</li><li>Shelves of potions, blades, and curiosities line the walls. The merchant nods slowly, their face half-hidden in shadow.</li></ul></article><article class="card"><h3>Sub-location text: town_hall</h3><ul><li>A modest town hall built from pale timber. Maps of Mosswake Isle hang on the walls, and the mayor&#x27;s desk is buried under worried letters.</li></ul></article><article class="card"><h3>Sub-location text: blacksmith</h3><ul><li>The forge glows red in the gloom. The blacksmith, a massive figure scarred by years of fire, hammers at a blade without looking up.</li><li>Heat and the smell of molten metal fill the smithy. Weapons line the walls. The blacksmith grunts a greeting.</li></ul></article><article class="card"><h3>Sub-location text: tavern</h3><ul><li>A low-ceilinged room thick with smoke and the smell of sour ale. A handful of patrons sit in silence. The barkeep polishes a cracked tankard.</li><li>The tavern is dark and crowded. A fire sputters in the hearth. Someone plays a slow, mournful tune on a lute in the corner.</li></ul></article><article class="card"><h3>Sub-location text: chapel</h3><ul><li>A small stone chapel. The altar is bare. Candles burn low before a faceless saint. The air is cold and still, as if prayer itself has frozen here.</li><li>Broken pews face a crumbling altar. Stained glass, mostly shattered, casts dim coloured light on the flagstones. It smells of old incense and dust.</li></ul></article><article class="card"><h3>Sub-location text: square</h3><ul><li>The village square is empty. A well stands at its centre, its bucket missing. The cobblestones are cracked and weeds push through.</li><li>A muddy open space surrounded by leaning buildings. A noticeboard displays faded warnings. A crow perches on the gallows post.</li></ul></article><article class="card"><h3>Sub-location text: entrance</h3><ul><li>The entrance is narrow and dark. Old torches, long dead, line the walls. The stone underfoot is worn smooth by countless feet -- or claws.</li></ul></article><article class="card"><h3>Sub-location text: corridor</h3><ul><li>A long, low corridor stretches into blackness. The walls are damp. Your footsteps echo strangely, as if something echoes back a moment too late.</li></ul></article><article class="card"><h3>Sub-location text: crypt</h3><ul><li>Stone sarcophagi line the walls, their lids cracked or displaced. Bones spill onto the floor. The air is thick with the sweet stench of decay.</li></ul></article><article class="card"><h3>Sub-location text: altar</h3><ul><li>A black stone altar stands at the centre of a vaulted chamber. Dark stains run down its sides. Symbols are carved into the floor around it.</li></ul></article><article class="card"><h3>Sub-location text: treasure_room</h3><ul><li>A heavy door opens onto a small chamber. Chests, some broken, some locked, line the walls. Gold coins are scattered among dust and cobwebs.</li><li>Behind a reinforced iron door, a vault of ancient riches awaits. One large chest, bound in black iron and carved with runes, sits at the centre  locked tight.</li></ul></article><article class="card"><h3>Sub-location text: courtyard</h3><ul><li>A wide courtyard choked with fog. Broken statues and overturned carts litter the ground. The keep looms ahead, dark and silent.</li></ul></article><article class="card"><h3>Sub-location text: mage</h3><ul><li>A robed mage stands within a circle of glowing arcane runes. Ancient tomes and spell components surround them. Their eyes burn with otherworldly knowledge.</li></ul></article><article class="card"><h3>Sub-location text: warlock</h3><ul><li>A dark figure in tattered robes hunches over a grimoire bound in black leather. Shadows writhe around them. The warlock looks up with hollow, burning eyes.</li></ul></article><article class="card"><h3>Sub-location text: explorer</h3><ul><li>A weathered explorer sits at a table covered in maps and nautical charts. Their sun-darkened skin and salt-stained clothes speak of countless voyages.</li></ul></article><article class="card"><h3>Sub-location text: great_hall</h3><ul><li>A vast hall with a collapsed roof. Moonlight falls on a long table still set with rusted plates. A throne sits at the far end, draped in cobwebs.</li></ul></article><article class="card"><h3>Sub-location text: tower</h3><ul><li>A spiral staircase winds upward through darkness. The stone steps are narrow and uneven. Wind howls through arrow slits.</li></ul></article><article class="card"><h3>Sub-location text: dungeon_cells</h3><ul><li>Iron-barred cells line both sides of a narrow passage. Most are empty. In one, a skeleton still hangs from its manacles.</li></ul></article><article class="card"><h3>Sub-location text: throne_room</h3><ul><li>A grand chamber, cold and dark. The throne is carved from black stone. Tattered banners hang from the walls, bearing sigils no living man remembers.</li></ul></article><article class="card"><h3>Sub-location text: clearing</h3><ul><li>A small clearing in the dense wood. Pale light filters through the canopy. Mushrooms grow in a perfect circle on the forest floor.</li></ul></article><article class="card"><h3>Sub-location text: ruins</h3><ul><li>Crumbling stone walls peek through the undergrowth. An old foundation, long overgrown. Something was here once. Something that was deliberately destroyed.</li></ul></article><article class="card"><h3>Sub-location text: stream</h3><ul><li>A dark stream winds through the trees. The water is cold and clear but tastes faintly of iron. Moss-covered stones line its banks.</li></ul></article><article class="card"><h3>Sub-location text: slime_pool</h3><ul><li>Thick green slime gathers in a shallow pool. It trembles with every step you take. This is where the Slime King was last seen.</li></ul></article><article class="card"><h3>Sub-location text: barracks</h3><ul><li>Rows of bunks line the walls of the barracks. Soldiers sharpen blades and mend armour in grim silence. The smell of iron and sweat hangs heavy in the air.</li></ul></article><article class="card"><h3>Sub-location text: tunnel</h3><ul><li>A wide tunnel carved by something enormous. Claw marks score the walls from floor to ceiling. Embers smoulder in cracks in the rock.</li></ul></article><article class="card"><h3>Sub-location text: hoard</h3><ul><li>A vast chamber piled high with gold, jewels, and the armour of fallen heroes. The wealth of a kingdom lies here, guarded by centuries of draconic greed.</li></ul></article><article class="card"><h3>Sub-location text: nest</h3><ul><li>The heart of the lair. Massive bones and scorched stone form a crude nest. The heat is almost unbearable. Then you see it -- the dragon, coiled and vast, one enormous eye sliding open to regard you.</li></ul></article><article class="card"><h3>Sub-location text: dock</h3><ul><li>A sturdy pier of weathered planks extends over grey waters. An old chalutier rocks gently at its mooring, its nets bundled on deck. An explorer studies their maps nearby.</li><li>The dock creaks underfoot. A fishing trawler -- a chalutier -- is tied to the bollard, its hull scarred by countless voyages. An explorer with charts and maps sits on a barrel.</li></ul></article></div>
   </section>
 
-  <section class="wiki-section" id="personnages">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Characters</h2>
-    <div class="section-grid three">
-      <article class="block">
-        <h3>Subcategory: Royal Characters</h3>
-        <div class="catalog"><strong>The King</strong><p>located in capital &gt; throne_room | launches the dragon quest | refuses if level below 5</p></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Village</h3>
-        <div class="catalog"><strong>Barkeep</strong><p>tavern | gives rumors about hidden locations</p></div>
-        <div class="catalog"><strong>Drunk</strong><p>tavern | talks about treasures and undead</p></div>
-        <div class="catalog"><strong>Hooded Figure</strong><p>tavern | gives mystical warnings</p></div>
-        <div class="catalog"><strong>Blacksmith</strong><p>blacksmith | advises to improve equipment</p></div>
-        <div class="catalog"><strong>Priest</strong><p>chapel | warns about cursed locations</p></div>
-        <div class="catalog"><strong>Old Woman</strong><p>square | talks about crows, secrets and death</p></div>
-        <div class="catalog"><strong>Guard</strong><p>square | mentions lost expeditions</p></div>
-        <div class="catalog"><strong>Merchant</strong><p>merchant | sells equipment and potions</p></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Wild Encounters</h3>
-        <div class="catalog"><strong>Hermit</strong><p>clearing | talks about a call from another place</p></div>
-        <div class="catalog"><strong>Ghost</strong><p>ruins | demands vengeance and evokes a fatal place</p></div>
-        <div class="catalog"><strong>Dying Knight</strong><p>courtyard | begs the player to finish the fight</p></div>
-        <div class="catalog"><strong>Survivor</strong><p>entrance | warns about the depths but talks of riches</p></div>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Port &amp; Castle NPCs</h3>
-        <div class="catalog"><strong>Explorer</strong><p>port &gt; dock | sells the complete map for 200 gold (reveals all locations)</p></div>
-        <div class="catalog"><strong>Mage</strong><p>castle/capital &gt; courtyard | sells spells</p></div>
-        <div class="catalog"><strong>Warlock</strong><p>castle &gt; tower | sells spells</p></div>
-        <p class="muted">NPCs only hint about zones matching the player's level (forest lvl 1+, cave lvl 3+, castle lvl 6+, dungeon lvl 9+). If harder zones exist, the NPC says "you haven't the stature for them."</p>
-      </article>
-    </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+  <section class="section" id="dialogues">
+    <div class="section-title"><h2>Dialogues</h2><span>dialogues scenario et templates NPC</span></div>
+    <div class="grid one"><article class="card"><h3>Mayor Aldren <span>Mosswake</span></h3><div class="table-scroll"><table><thead><tr><th>State</th><th>Dialogue</th></tr></thead><tbody><tr><td>Embargo active</td><td>The harbor is under embargo. No boat leaves Mosswake while the marsh roads are unsafe.</td></tr><tr><td>Level 2 objective</td><td>Prove you can survive beyond the village. Reach level 2 in Old Fern Forest, then come back to me.</td></tr><tr><td>Slime Hollow revealed</td><td>Good. You have learned enough not to vanish at the first puddle that moves.</td></tr><tr><td>Slime King objective</td><td>The trouble comes from Slime Hollow, south-east of Greenhollow. Defeat the Slime King, and I will lift the embargo.</td></tr><tr><td>After Slime King</td><td>You did it. The roads will breathe again, and Mosswake owes you more than a few coins.</td></tr><tr><td>Pass obtained</td><td>Southwake Port has your name on the ledger now. Show the Harbor Pass at the dock and sail when you are ready.</td></tr></tbody></table></div></article><article class="card"><h3>King Rowen <span>Crownvale</span></h3><div class="table-scroll"><table><thead><tr><th>State</th><th>Dialogue</th></tr></thead><tbody><tr><td>First request</td><td>Crownvale looks peaceful from a tower, but the road east is held by an oathbreaker in my old keep.</td></tr><tr><td>Hollow Baron objective</td><td>Find Crownvale Keep at H9. Defeat the Hollow Baron, and I will grant you passage to Greenmarch.</td></tr><tr><td>After Hollow Baron</td><td>The eastern road is breathing again. You did not bring me a victory parade; you brought me proof. That is better.</td></tr><tr><td>Greenmarch pass</td><td>Show this at the forest border. Greenmarch will open to you. Listen there before you strike. The old trees remember more than we do.</td></tr><tr><td>Before final readiness</td><td>The last road is open, but do not mistake access for readiness. Return when you have grown stronger. (Reach level 5)</td></tr><tr><td>Dragon quest</td><td>The old legends were warnings, not stories. The final sign points to Ashenreach.</td></tr><tr><td>Dragon quest meaning</td><td>Go there and learn what has returned. If blade is needed, use it. If truth is needed, survive long enough to bring it back.</td></tr><tr><td>After dragon</td><td>You returned with the sky still blue above us. Crownvale will remember that, even when the songs get your name wrong.</td></tr></tbody></table></div></article><article class="card"><h3>Elder Maelis <span>Greenmarch</span></h3><div class="table-scroll"><table><thead><tr><th>State</th><th>Dialogue</th></tr></thead><tbody><tr><td>First request</td><td>Greenmarch is old enough to forgive many things. Thornwell is not one of them.</td></tr><tr><td>Thornwell objective</td><td>Go to Thornwell Ruins at W10. The Warden there binds roots around paths that should remain open.</td></tr><tr><td>After Thornwell</td><td>The ruined root has gone quiet. You did not silence the forest; you freed the part that was choking.</td></tr><tr><td>Scalefen pass</td><td>Take this to the marsh border. Scalefen respects deeds more than letters, but the seal will make them listen.</td></tr><tr><td>After pass</td><td>The trees no longer pull away from your shadow. Scalefen has accepted your road; follow it carefully.</td></tr></tbody></table></div></article><article class="card"><h3>Matriarch Sytha <span>Scalefen</span></h3><div class="table-scroll"><table><thead><tr><th>State</th><th>Dialogue</th></tr></thead><tbody><tr><td>First request</td><td>Our scouts vanish near the drowned stone. Not dead at first. Just missing. Then the marsh returns their weapons.</td></tr><tr><td>Mirejaw objective</td><td>Find Sunken Grotto at S17. If the Mirejaw Matriarch rules there, end her hold and the road to Ashenreach opens.</td></tr><tr><td>After Mirejaw</td><td>Mirejaw&#x27;s brood has scattered. The water is still foul, but now it moves where it chooses.</td></tr><tr><td>Ashenreach pass</td><td>Take the Ashenreach Pass. The mountains do not welcome anyone, but they will no longer turn you away at our border.</td></tr><tr><td>After pass</td><td>The marsh has judged you loud enough to be useful and quiet enough to live. The mountain road is yours.</td></tr></tbody></table></div></article><article class="card"><h3>Highpass Scout <span>Ashenreach</span></h3><div class="table-scroll"><table><thead><tr><th>State</th><th>Dialogue</th></tr></thead><tbody><tr><td>First warning</td><td>Something old moves above the ridges. We hear stone split at night, but no storm follows.</td></tr><tr><td>Dragon trail</td><td>The trail bends toward the Dragon Lair. If you are one of the Forest Fools, this is where the name earns its weight.</td></tr><tr><td>Quest active</td><td>Follow the ash winds. The mountain keeps pointing there, even when the compass refuses.</td></tr><tr><td>After dragon</td><td>The pass is quiet. Too quiet for this place. Maybe that is what victory sounds like up here.</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / tavern / barkeep</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>&quot;Ale?&quot; The barkeep slides a cracked tankard toward you. &quot;A traveller, eh. You look half-dead already.&quot; He leans closer. &quot;Word is there&#x27;s a {loc_type} at {coord}. Folk who went there... didn&#x27;t come back.&quot;</td></tr><tr><td>2</td><td>&quot;Keep your voice down.&quot; The barkeep glances around. &quot;A merchant came through last week, raving about a {loc_type} near {coord}. Said he saw things crawling in the dark. I say stay away.&quot;</td></tr><tr><td>3</td><td>&quot;You want advice? Head to {coord}. There&#x27;s a {loc_type} there. Dangerous, aye, but those who survive come back richer than kings. Or they don&#x27;t come back at all.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / tavern / drunk</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A man slumped over the bar grabs your arm. &quot;I seen it... the {loc_type}... at {coord}...&quot; He shivers. &quot;The dead walk there. They walk and they wait.&quot;</td></tr><tr><td>2</td><td>&quot;Hic... you look strong enough...&quot; A drunk patron waves vaguely. &quot;Go to {coord}. The {loc_type}... there&#x27;s treasure. Gold. I&#x27;d go myself but... hic... my legs don&#x27;t work so good.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / tavern / hooded_figure</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A hooded figure in the corner beckons. &quot;Seek the {loc_type} at {coord}. What you find there will change you. For better or worse.&quot; They vanish into shadow before you can reply.</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / blacksmith / blacksmith</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>The blacksmith doesn&#x27;t look up from his anvil. &quot;You&#x27;ll need better steel if you&#x27;re heading to {coord}. There&#x27;s a {loc_type} there. The things inside... they don&#x27;t die easy.&quot;</td></tr><tr><td>2</td><td>&quot;I forged a blade for a knight once. He was bound for the {loc_type} at {coord}.&quot; The blacksmith pauses. &quot;The blade came back. He didn&#x27;t.&quot;</td></tr><tr><td>3</td><td>&quot;Word of advice, stranger. The {loc_type} at {coord} -- don&#x27;t go at night. Not that it matters. It&#x27;s always night down there.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / chapel / priest</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>The priest turns slowly. His eyes are milky and unfocused. &quot;The darkness gathers at {coord}. A {loc_type} festers there like a wound in the earth. Pray before you go. It may be your last chance.&quot;</td></tr><tr><td>2</td><td>&quot;Child, the dead do not rest at {coord}. The {loc_type} there is cursed. I have blessed many who went to face it. I have buried more.&quot;</td></tr><tr><td>3</td><td>&quot;I hear confessions from soldiers who returned from {coord}. The {loc_type}... it changed them. They speak of altars and bones and things that should not live.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / square / old_woman</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>An old woman sits by the well, muttering. She looks up as you approach. &quot;The crows fly toward {coord}. Where crows gather, death follows. There&#x27;s a {loc_type} there. Mark my words.&quot;</td></tr><tr><td>2</td><td>&quot;You&#x27;re not from here.&quot; The old woman clutches a dead raven to her chest. &quot;Go to {coord} if you want answers. The {loc_type} holds secrets. But secrets have teeth.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / square / guard</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A guard leans against the gallows post. &quot;We lost three men at {coord} last month. {loc_type}. Whatever&#x27;s in there, it&#x27;s getting bolder. Could use someone fool enough to go in.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES / merchant / merchant</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>&quot;Ah, a customer.&quot; The merchant smiles thinly. &quot;If you&#x27;re heading to the {loc_type} at {coord}, you&#x27;ll want potions. Lots of potions. The things down there don&#x27;t bargain.&quot;</td></tr><tr><td>2</td><td>&quot;I trade with every village in these lands. The one near {coord}? They won&#x27;t go near the {loc_type} anymore. Bad for business, but good for yours -- less competition for whatever&#x27;s inside.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES_WILD / clearing / hermit</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A gaunt figure crouches by a fire of green flame. &quot;You seek purpose? Go to {coord}. The {loc_type} there calls to those who listen. I heard it once. I will not hear it again.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES_WILD / ruins / ghost</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A pale shimmer in the air. A voice, thin as wind: &quot;I fell at {coord}. The {loc_type}... it took everything. Avenge me, or join me.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES_WILD / courtyard / dying_knight</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A knight slumps against a broken pillar, bleeding. &quot;The {loc_type} at {coord}... we tried to clear it. Too many of them.&quot; He coughs blood. &quot;Finish what we started.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES_WILD / entrance / survivor</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>A figure stumbles out of the darkness, wild-eyed. &quot;Don&#x27;t... don&#x27;t go deeper.&quot; They grip your shoulder. &quot;But if you want real treasure, the {loc_type} at {coord} is worse. And richer.&quot;</td></tr></tbody></table></div></article><article class="card"><h3>NPC_DIALOGUES_WILD / dock / old_sailor</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>Dialogue template</th></tr></thead><tbody><tr><td>1</td><td>&quot;The sea&#x27;s been angry lately.&quot; The old sailor spits into the water. &quot;Used to take the chalutier out beyond the reef. Can&#x27;t now.&quot; He squints at the horizon. &quot;Heard there&#x27;s trouble at the {loc_type} near {coord}.&quot;</td></tr><tr><td>2</td><td>&quot;That chalutier there? She&#x27;s mine. Seaworthy, aye. But I won&#x27;t sail until things calm down. Heard tales of a {loc_type} at {coord}. Dark tales.&quot;</td></tr></tbody></table></div></article></div>
   </section>
 
-  <section class="wiki-section" id="systemes">
-    <p class="separator">====================================================================================================================</p>
-    <h2 class="section-title">Category: Systems</h2>
-    <div class="section-grid two">
-      <article class="block">
-        <h3>Subcategory: Player</h3>
-        <ul>
-          <li>start: 100 HP, 50 Mana, 20 gold, level 1</li>
-          <li>base attack: 3</li>
-          <li>base defense: 0</li>
-          <li>starting equipment: Rusty Sword and Cloth Rags</li>
-          <li>starting inventory: Small Potion</li>
-          <li>starting position: E5</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Progression</h3>
-        <ul>
-          <li>initial XP required: 50</li>
-          <li>each level: +10 max HP, +10 max Mana, full heal, +1 base attack</li>
-          <li>required XP is then multiplied by 1.5</li>
-          <li>standard enemies scale up with player level</li>
-          <li>the dragon has fixed stats (350 HP, 40 ATK)</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Combat</h3>
-        <ul>
-          <li>combat zones: dungeon, cave, forest, castle — each with its own enemy pool scaled by difficulty</li>
-          <li>zone difficulty: forest (easy) → cave (medium) → castle (hard) → dungeon (very hard)</li>
-          <li>actions: attack, cast (spell), use potion, flee</li>
-          <li>damage received is reduced by defense via raw damage - defense // 2</li>
-          <li>dodge: each enemy attack can be dodged based on armor dodge % (e.g. Shadow Cloak 20%)</li>
-          <li>successful flee: 50% chance</li>
-          <li>a zone can be temporarily marked cleared after victory</li>
-          <li>enemies and loot respawn after 15 actions</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Mana &amp; Spells</h3>
-        <ul>
-          <li>base mana: 50, +10 per level-up</li>
-          <li>mana is restored by sleeping at a tavern (10 gold)</li>
-          <li>buy spells from the Mage (castle/capital courtyard) or the Warlock (castle tower)</li>
-          <li>default maximum of 3 spells — use "train" at a mage's courtyard (150 gold) to expand up to 6</li>
-          <li>use "cast" command during combat to cast a spell</li>
-        </ul>
-        <p class="muted">added in patch 1.0.2</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Sleep</h3>
-        <ul>
-          <li>available at any tavern (village or port)</li>
-          <li>costs 10 gold</li>
-          <li>fully restores HP and Mana</li>
-          <li>gives a small amount of XP</li>
-          <li>resets merchant stock</li>
-        </ul>
-        <p class="muted">added in patch 1.0.1</p>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Loot And Search</h3>
-        <ul>
-          <li>the search command only works inside a location</li>
-          <li>major search zones: treasure_room, crypt, altar, ruins, clearing, throne_room, great_hall, tower, dungeon_cells, hoard</li>
-          <li>search gives gold and may give an item</li>
-          <li>fights can also drop consumables, misc items, weapons or armor</li>
-          <li>an empty location cannot be searched a second time</li>
-          <li>castle treasure_room: requires Old Key to open locked chest (80-200 gold + powerful weapon/armor + consumable). Key is consumed.</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Merchant</h3>
-        <ul>
-          <li>stock generated randomly</li>
-          <li>up to 3 different consumables</li>
-          <li>between 1 and 3 weapons</li>
-          <li>60% chance to add an armor</li>
-          <li>items resold at half price, minimum 1 gold</li>
-        </ul>
-      </article>
-
-      <article class="block">
-        <h3>Subcategory: Commands</h3>
-        <ul>
-          <li>help (h)</li>
-          <li>map (m)</li>
-          <li>cd {cell} — auto-enters the location if one exists (e.g. cd E5 enters the capital directly)</li>
-          <li>cd {location}, cd {subloc} — prefix matching supported (e.g. "cd cou" → courtyard)</li>
-          <li>cd ..</li>
-          <li>look (l)</li>
-          <li>talk (t)</li>
-          <li>stats (s)</li>
-          <li>fight (f)</li>
-          <li>inventory / inv (i)</li>
-          <li>equip {item} (e)</li>
-          <li>unequip {weapon|armor} (u)</li>
-          <li>use {item}</li>
-          <li>buy {item} (b)</li>
-          <li>sell {item}</li>
-          <li>cast {spell} — during combat</li>
-          <li>sleep — at tavern, costs 10 gold</li>
-          <li>train — at mage's courtyard, costs 150 gold, adds +1 spell slot</li>
-          <li>search</li>
-          <li>cheat — unlocks everything (beta testing)</li>
-          <li>quit / exit (q)</li>
-        </ul>
-        <p class="muted">auto-completion: type the beginning of an item name (e.g. "sell sm" → Small Potion). cd also supports prefix matching for sub-location names.</p>
-        <p class="muted">keyboard shortcuts in parentheses, added in patch 1.0.1. train command added in patch 1.0.3.</p>
-      </article>
-    </div>
-    <p class="section-back"><a href="#top">back to top</a></p>
+  <section class="section" id="items">
+    <div class="section-title"><h2>Items</h2><span>armes, armures, consommables, misc</span></div>
+    <div class="grid one"><article class="card"><h3>Weapons</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Attack</th><th>Buy value</th><th>Sell value</th></tr></thead><tbody><tr><td><code>rusty_sword</code></td><td>Rusty Sword</td><td>3</td><td>5</td><td>2</td></tr><tr><td><code>iron_dagger</code></td><td>Iron Dagger</td><td>5</td><td>12</td><td>6</td></tr><tr><td><code>mosswood_staff</code></td><td>Mosswood Staff</td><td>6</td><td>18</td><td>9</td></tr><tr><td><code>fisher_hook_blade</code></td><td>Fisher Hook Blade</td><td>7</td><td>22</td><td>11</td></tr><tr><td><code>iron_sword</code></td><td>Iron Sword</td><td>8</td><td>25</td><td>12</td></tr><tr><td><code>militia_sabre</code></td><td>Militia Sabre</td><td>10</td><td>38</td><td>19</td></tr><tr><td><code>steel_sword</code></td><td>Steel Sword</td><td>12</td><td>50</td><td>25</td></tr><tr><td><code>field_halberd</code></td><td>Field Halberd</td><td>13</td><td>58</td><td>29</td></tr><tr><td><code>war_hammer</code></td><td>War Hammer</td><td>14</td><td>65</td><td>32</td></tr><tr><td><code>knight_longsword</code></td><td>Knight Longsword</td><td>16</td><td>90</td><td>45</td></tr><tr><td><code>briar_knife</code></td><td>Briar Knife</td><td>17</td><td>105</td><td>52</td></tr><tr><td><code>dark_blade</code></td><td>Dark Blade</td><td>18</td><td>120</td><td>60</td></tr><tr><td><code>thornwood_staff</code></td><td>Thornwood Staff</td><td>20</td><td>155</td><td>77</td></tr><tr><td><code>rootbound_axe</code></td><td>Rootbound Axe</td><td>21</td><td>175</td><td>87</td></tr><tr><td><code>silver_longsword</code></td><td>Silver Longsword</td><td>22</td><td>200</td><td>100</td></tr><tr><td><code>reedscale_spear</code></td><td>Reedscale Spear</td><td>24</td><td>245</td><td>122</td></tr><tr><td><code>swamp_cleaver</code></td><td>Swamp Cleaver</td><td>25</td><td>275</td><td>137</td></tr><tr><td><code>bog_iron_mace</code></td><td>Bog-Iron Mace</td><td>27</td><td>320</td><td>160</td></tr><tr><td><code>cursed_greatsword</code></td><td>Cursed Greatsword</td><td>28</td><td>350</td><td>175</td></tr><tr><td><code>mirefang_blade</code></td><td>Mirefang Blade</td><td>30</td><td>430</td><td>215</td></tr><tr><td><code>ashen_greatsword</code></td><td>Ashen Greatsword</td><td>32</td><td>560</td><td>280</td></tr><tr><td><code>basalt_maul</code></td><td>Basalt Maul</td><td>34</td><td>700</td><td>350</td></tr><tr><td><code>cinder_edge</code></td><td>Cinder Edge</td><td>36</td><td>850</td><td>425</td></tr><tr><td><code>dragon_slayer_blade</code></td><td>Dragon Slayer Blade</td><td>35</td><td>1000</td><td>500</td></tr><tr><td><code>oathkeeper</code></td><td>Oathkeeper</td><td>40</td><td>1500</td><td>750</td></tr></tbody></table></div></article><article class="card"><h3>Armors</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Armor</th><th>Dodge</th><th>Buy value</th><th>Sell value</th></tr></thead><tbody><tr><td><code>cloth_rags</code></td><td>Cloth Rags</td><td>1</td><td>5</td><td>3</td><td>1</td></tr><tr><td><code>padded_jacket</code></td><td>Padded Jacket</td><td>2</td><td>8</td><td>8</td><td>4</td></tr><tr><td><code>leather_vest</code></td><td>Leather Vest</td><td>4</td><td>10</td><td>15</td><td>7</td></tr><tr><td><code>fisher_coat</code></td><td>Fisher Coat</td><td>5</td><td>12</td><td>24</td><td>12</td></tr><tr><td><code>scout_cloak</code></td><td>Scout Cloak</td><td>6</td><td>16</td><td>35</td><td>17</td></tr><tr><td><code>chainmail</code></td><td>Chainmail</td><td>8</td><td>3</td><td>45</td><td>22</td></tr><tr><td><code>brigandine</code></td><td>Brigandine</td><td>11</td><td>5</td><td>75</td><td>37</td></tr><tr><td><code>ranger_hood</code></td><td>Ranger Hood</td><td>9</td><td>18</td><td>90</td><td>45</td></tr><tr><td><code>knight_mail</code></td><td>Knight Mail</td><td>13</td><td>4</td><td>110</td><td>55</td></tr><tr><td><code>plate_armor</code></td><td>Plate Armor</td><td>14</td><td>2</td><td>100</td><td>50</td></tr><tr><td><code>mossweave_robes</code></td><td>Mossweave Robes</td><td>12</td><td>14</td><td>140</td><td>70</td></tr><tr><td><code>barkscale_mail</code></td><td>Barkscale Mail</td><td>16</td><td>8</td><td>190</td><td>95</td></tr><tr><td><code>dark_plate</code></td><td>Dark Plate</td><td>20</td><td>5</td><td>250</td><td>125</td></tr><tr><td><code>shadow_cloak</code></td><td>Shadow Cloak</td><td>10</td><td>20</td><td>80</td><td>40</td></tr><tr><td><code>reedscale_vest</code></td><td>Reedscale Vest</td><td>18</td><td>11</td><td>260</td><td>130</td></tr><tr><td><code>marshguard_plate</code></td><td>Marshguard Plate</td><td>22</td><td>6</td><td>360</td><td>180</td></tr><tr><td><code>mistwalker_cloak</code></td><td>Mistwalker Cloak</td><td>17</td><td>24</td><td>420</td><td>210</td></tr><tr><td><code>basalt_plate</code></td><td>Basalt Plate</td><td>26</td><td>3</td><td>620</td><td>310</td></tr><tr><td><code>ashen_cloak</code></td><td>Ashen Cloak</td><td>21</td><td>22</td><td>700</td><td>350</td></tr><tr><td><code>wyrmguard_plate</code></td><td>Wyrmguard Plate</td><td>30</td><td>8</td><td>950</td><td>475</td></tr></tbody></table></div></article><article class="card"><h3>Consumables</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Heal</th><th>Buy value</th><th>Sell value</th></tr></thead><tbody><tr><td><code>small_potion</code></td><td>Small Potion</td><td>25</td><td>8</td><td>4</td></tr><tr><td><code>medium_potion</code></td><td>Medium Potion</td><td>50</td><td>20</td><td>10</td></tr><tr><td><code>large_potion</code></td><td>Large Potion</td><td>100</td><td>45</td><td>22</td></tr><tr><td><code>elixir</code></td><td>Elixir</td><td>200</td><td>100</td><td>50</td></tr></tbody></table></div></article><article class="card"><h3>Misc items</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Value</th><th>Sell value</th></tr></thead><tbody><tr><td><code>old_key</code></td><td>Old Key</td><td>20</td><td>10</td></tr><tr><td><code>harbor_pass</code></td><td>Harbor Pass</td><td>0</td><td>0</td></tr><tr><td><code>greenmarch_pass</code></td><td>Greenmarch Pass</td><td>0</td><td>0</td></tr><tr><td><code>scalefen_pass</code></td><td>Scalefen Pass</td><td>0</td><td>0</td></tr><tr><td><code>ashenreach_pass</code></td><td>Ashenreach Pass</td><td>0</td><td>0</td></tr><tr><td><code>skull_amulet</code></td><td>Skull Amulet</td><td>30</td><td>15</td></tr><tr><td><code>raven_feather</code></td><td>Raven Feather</td><td>10</td><td>5</td></tr><tr><td><code>golden_chalice</code></td><td>Golden Chalice</td><td>75</td><td>37</td></tr><tr><td><code>torn_scroll</code></td><td>Torn Scroll</td><td>50</td><td>25</td></tr><tr><td><code>dark_gem</code></td><td>Dark Gem</td><td>60</td><td>30</td></tr><tr><td><code>iron_ring</code></td><td>Iron Ring</td><td>10</td><td>5</td></tr></tbody></table></div></article></div>
   </section>
 
-  <p class="separator">====================================================================================================================</p>
+  <section class="section" id="spells">
+    <div class="section-title"><h2>Sorts</h2><span>magie achetable et utilisable en combat</span></div>
+    <div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Effect</th><th>Mana</th><th>Buy value</th><th>Source</th></tr></thead><tbody><tr><td><code>fireball</code></td><td>Fireball</td><td>damage: 30</td><td>20</td><td>50</td><td>mage</td></tr><tr><td><code>ice_shard</code></td><td>Ice Shard</td><td>damage: 20</td><td>15</td><td>35</td><td>mage</td></tr><tr><td><code>heal_light</code></td><td>Heal Light</td><td>heal: 40</td><td>25</td><td>60</td><td>mage</td></tr><tr><td><code>arcane_shield</code></td><td>Arcane Shield</td><td>shield: 10</td><td>20</td><td>45</td><td>mage</td></tr><tr><td><code>shadow_bolt</code></td><td>Shadow Bolt</td><td>damage: 40</td><td>25</td><td>80</td><td>warlock</td></tr><tr><td><code>drain_life</code></td><td>Drain Life</td><td>damage: 25, heal: 25</td><td>30</td><td>100</td><td>warlock</td></tr><tr><td><code>curse</code></td><td>Curse</td><td>weaken: 0.3</td><td>20</td><td>70</td><td>warlock</td></tr></tbody></table></div>
+  </section>
 
-  <footer>
-    <p><a class="back-link" href="index.html">back to main site</a></p>
-    <p style="margin-top: 28px;">contact: forestfools@blackterminal.dev</p>
-  </footer>
-</main>
-<script>
-  (function () {
-    var left = document.getElementById("ascii-left");
-    var right = document.getElementById("ascii-right");
-    var chars = "!@#$%^&*()_+-=[]{}|;:,.<>?/\\~";
+  <section class="section" id="monsters">
+    <div class="section-title"><h2>Monstres</h2><span>tous les pools ennemis et boss</span></div>
+    <div class="grid one"><article class="card"><h3>slime_lair</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Slime King</td><td>45</td><td>7</td><td>12-24</td><td>28</td></tr></tbody></table></div></article><article class="card"><h3>crownvale_woods</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Road Wolf</td><td>22</td><td>5</td><td>4-10</td><td>9</td></tr><tr><td>Field Raider</td><td>26</td><td>6</td><td>6-14</td><td>12</td></tr><tr><td>Bramble Hound</td><td>30</td><td>7</td><td>5-14</td><td>13</td></tr><tr><td>Harvest Wasp Swarm</td><td>24</td><td>8</td><td>4-13</td><td>14</td></tr><tr><td>Hill Bandit</td><td>34</td><td>8</td><td>9-18</td><td>16</td></tr><tr><td>Hollow Squire</td><td>40</td><td>9</td><td>10-22</td><td>20</td></tr></tbody></table></div></article><article class="card"><h3>greenmarch_forest</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Mossbound Stalker</td><td>38</td><td>9</td><td>8-18</td><td>18</td></tr><tr><td>Briar Witch</td><td>32</td><td>11</td><td>10-22</td><td>21</td></tr><tr><td>Rootsnare Beast</td><td>44</td><td>10</td><td>9-20</td><td>22</td></tr><tr><td>Verdant Wisp</td><td>30</td><td>13</td><td>10-24</td><td>24</td></tr><tr><td>Thornback Stag</td><td>52</td><td>12</td><td>12-26</td><td>28</td></tr><tr><td>Hollow Treant</td><td>66</td><td>14</td><td>15-32</td><td>34</td></tr></tbody></table></div></article><article class="card"><h3>scalefen_marsh</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Marsh Strider</td><td>48</td><td>12</td><td>12-26</td><td>26</td></tr><tr><td>Reedscale Hunter</td><td>54</td><td>13</td><td>14-30</td><td>30</td></tr><tr><td>Bog Lantern</td><td>40</td><td>15</td><td>12-28</td><td>28</td></tr><tr><td>Fen Leech Cluster</td><td>50</td><td>16</td><td>13-32</td><td>34</td></tr><tr><td>Mudscale Brute</td><td>72</td><td>17</td><td>18-38</td><td>42</td></tr><tr><td>Mist Hag</td><td>58</td><td>20</td><td>20-45</td><td>48</td></tr><tr><td>Mirejaw Spawn</td><td>80</td><td>19</td><td>22-48</td><td>52</td></tr></tbody></table></div></article><article class="card"><h3>ashenreach_wastes</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Ashbound Raider</td><td>70</td><td>18</td><td>20-45</td><td>48</td></tr><tr><td>Cliff Maw</td><td>84</td><td>20</td><td>22-52</td><td>55</td></tr><tr><td>Cinder Warden</td><td>76</td><td>22</td><td>25-58</td><td>60</td></tr><tr><td>Stoneback Wyvern</td><td>95</td><td>23</td><td>28-62</td><td>68</td></tr><tr><td>Black Ore Golem</td><td>120</td><td>24</td><td>30-70</td><td>78</td></tr><tr><td>Ash Wraith</td><td>82</td><td>27</td><td>32-75</td><td>82</td></tr><tr><td>Crag Revenant</td><td>105</td><td>26</td><td>35-82</td><td>90</td></tr></tbody></table></div></article><article class="card"><h3>hollow_baron</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>The Hollow Baron</td><td>95</td><td>15</td><td>35-60</td><td>80</td></tr></tbody></table></div></article><article class="card"><h3>thornwell_warden</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>The Thornwell Warden</td><td>135</td><td>20</td><td>45-80</td><td>120</td></tr></tbody></table></div></article><article class="card"><h3>mirejaw_matriarch</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>The Mirejaw Matriarch</td><td>180</td><td>25</td><td>65-110</td><td>170</td></tr></tbody></table></div></article><article class="card"><h3>forest</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Giant Rat</td><td>15</td><td>3</td><td>2-6</td><td>6</td></tr><tr><td>Wild Crow</td><td>12</td><td>2</td><td>1-4</td><td>4</td></tr><tr><td>Plague Rat Swarm</td><td>20</td><td>4</td><td>2-8</td><td>8</td></tr><tr><td>Feral Boar</td><td>25</td><td>5</td><td>3-8</td><td>10</td></tr><tr><td>Giant Spider</td><td>22</td><td>4</td><td>2-7</td><td>7</td></tr><tr><td>Goblin Scavenger</td><td>18</td><td>3</td><td>2-6</td><td>6</td></tr><tr><td>Venomous Snake</td><td>14</td><td>5</td><td>2-5</td><td>5</td></tr></tbody></table></div></article><article class="card"><h3>cave</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Cave Wolf</td><td>35</td><td>7</td><td>5-15</td><td>15</td></tr><tr><td>Brown Bear</td><td>50</td><td>9</td><td>8-20</td><td>20</td></tr><tr><td>Cave Bat Swarm</td><td>25</td><td>6</td><td>4-12</td><td>12</td></tr><tr><td>Rock Troll</td><td>60</td><td>10</td><td>10-25</td><td>22</td></tr><tr><td>Shadow Stalker</td><td>40</td><td>8</td><td>6-18</td><td>18</td></tr><tr><td>Undead Miner</td><td>30</td><td>7</td><td>5-15</td><td>14</td></tr></tbody></table></div></article><article class="card"><h3>castle</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Living Armor</td><td>60</td><td>12</td><td>12-30</td><td>30</td></tr><tr><td>Haunted Knight</td><td>70</td><td>14</td><td>15-35</td><td>35</td></tr><tr><td>Hollow Wraith</td><td>50</td><td>11</td><td>10-28</td><td>28</td></tr><tr><td>Cursed Sentinel</td><td>65</td><td>13</td><td>12-32</td><td>32</td></tr><tr><td>Spectral Guard</td><td>55</td><td>12</td><td>10-28</td><td>28</td></tr><tr><td>Gargoyle</td><td>75</td><td>15</td><td>15-40</td><td>38</td></tr></tbody></table></div></article><article class="card"><h3>dungeon</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th></tr></thead><tbody><tr><td>Cursed Knight</td><td>80</td><td>16</td><td>18-45</td><td>45</td></tr><tr><td>Tomb Guardian</td><td>90</td><td>18</td><td>20-50</td><td>50</td></tr><tr><td>Dark Sorcerer</td><td>70</td><td>20</td><td>25-60</td><td>55</td></tr><tr><td>Bone Colossus</td><td>120</td><td>22</td><td>30-70</td><td>65</td></tr><tr><td>Undead Priest</td><td>65</td><td>17</td><td>18-45</td><td>45</td></tr><tr><td>Abyssal Demon</td><td>100</td><td>24</td><td>30-80</td><td>70</td></tr></tbody></table></div></article><article class="card"><h3>Dragon boss</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>HP</th><th>ATK</th><th>Gold</th><th>XP</th><th>Special</th></tr></thead><tbody><tr><td>The Ancient Dragon</td><td>350</td><td>40</td><td>100-250</td><td>500</td><td>inferno chance 0.3</td></tr></tbody></table></div></article></div>
+  </section>
 
-    function randomLine() {
-      var baseLength = 80 + Math.floor(Math.random() * 41);
-      var line = "";
-      for (var i = 0; i < baseLength; i++) {
-        line += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return line;
-    }
+  <section class="section" id="loot">
+    <div class="section-title"><h2>Loot</h2><span>tiers de regions, armes et armures</span></div>
+    <div class="grid one"><article class="card"><p>Le continent n'a pas de tier de loot : c'est une vue globale du monde. Le loot depend de la region jouable ou du type de lieu ou se trouve le joueur.</p></article><article class="card"><h3>Region tiers</h3><div class="table-scroll"><table><thead><tr><th>Region</th><th>Tier</th></tr></thead><tbody><tr><td>mosswake</td><td>1</td></tr><tr><td>crownvale</td><td>2</td></tr><tr><td>greenmarch</td><td>3</td></tr><tr><td>scalefen</td><td>4</td></tr><tr><td>ashenreach</td><td>5</td></tr></tbody></table></div></article><article class="card"><h3>Weapon tiers</h3><div class="table-scroll"><table><thead><tr><th>Tier</th><th>Key</th><th>Name</th><th>ATK</th><th>Value</th></tr></thead><tbody><tr><td>1</td><td><code>rusty_sword</code></td><td>Rusty Sword</td><td>3</td><td>5</td></tr><tr><td>1</td><td><code>iron_dagger</code></td><td>Iron Dagger</td><td>5</td><td>12</td></tr><tr><td>1</td><td><code>mosswood_staff</code></td><td>Mosswood Staff</td><td>6</td><td>18</td></tr><tr><td>1</td><td><code>fisher_hook_blade</code></td><td>Fisher Hook Blade</td><td>7</td><td>22</td></tr><tr><td>2</td><td><code>iron_sword</code></td><td>Iron Sword</td><td>8</td><td>25</td></tr><tr><td>2</td><td><code>militia_sabre</code></td><td>Militia Sabre</td><td>10</td><td>38</td></tr><tr><td>2</td><td><code>steel_sword</code></td><td>Steel Sword</td><td>12</td><td>50</td></tr><tr><td>2</td><td><code>field_halberd</code></td><td>Field Halberd</td><td>13</td><td>58</td></tr><tr><td>2</td><td><code>war_hammer</code></td><td>War Hammer</td><td>14</td><td>65</td></tr><tr><td>2</td><td><code>knight_longsword</code></td><td>Knight Longsword</td><td>16</td><td>90</td></tr><tr><td>3</td><td><code>briar_knife</code></td><td>Briar Knife</td><td>17</td><td>105</td></tr><tr><td>3</td><td><code>dark_blade</code></td><td>Dark Blade</td><td>18</td><td>120</td></tr><tr><td>3</td><td><code>thornwood_staff</code></td><td>Thornwood Staff</td><td>20</td><td>155</td></tr><tr><td>3</td><td><code>rootbound_axe</code></td><td>Rootbound Axe</td><td>21</td><td>175</td></tr><tr><td>3</td><td><code>silver_longsword</code></td><td>Silver Longsword</td><td>22</td><td>200</td></tr><tr><td>4</td><td><code>reedscale_spear</code></td><td>Reedscale Spear</td><td>24</td><td>245</td></tr><tr><td>4</td><td><code>swamp_cleaver</code></td><td>Swamp Cleaver</td><td>25</td><td>275</td></tr><tr><td>4</td><td><code>bog_iron_mace</code></td><td>Bog-Iron Mace</td><td>27</td><td>320</td></tr><tr><td>4</td><td><code>mirefang_blade</code></td><td>Mirefang Blade</td><td>30</td><td>430</td></tr><tr><td>4</td><td><code>cursed_greatsword</code></td><td>Cursed Greatsword</td><td>28</td><td>350</td></tr><tr><td>5</td><td><code>ashen_greatsword</code></td><td>Ashen Greatsword</td><td>32</td><td>560</td></tr><tr><td>5</td><td><code>basalt_maul</code></td><td>Basalt Maul</td><td>34</td><td>700</td></tr><tr><td>5</td><td><code>cinder_edge</code></td><td>Cinder Edge</td><td>36</td><td>850</td></tr><tr><td>6</td><td><code>dragon_slayer_blade</code></td><td>Dragon Slayer Blade</td><td>35</td><td>1000</td></tr><tr><td>6</td><td><code>oathkeeper</code></td><td>Oathkeeper</td><td>40</td><td>1500</td></tr></tbody></table></div></article><article class="card"><h3>Armor tiers</h3><div class="table-scroll"><table><thead><tr><th>Tier</th><th>Key</th><th>Name</th><th>DEF</th><th>Dodge</th><th>Value</th></tr></thead><tbody><tr><td>1</td><td><code>cloth_rags</code></td><td>Cloth Rags</td><td>1</td><td>5</td><td>3</td></tr><tr><td>1</td><td><code>padded_jacket</code></td><td>Padded Jacket</td><td>2</td><td>8</td><td>8</td></tr><tr><td>1</td><td><code>leather_vest</code></td><td>Leather Vest</td><td>4</td><td>10</td><td>15</td></tr><tr><td>1</td><td><code>fisher_coat</code></td><td>Fisher Coat</td><td>5</td><td>12</td><td>24</td></tr><tr><td>1</td><td><code>scout_cloak</code></td><td>Scout Cloak</td><td>6</td><td>16</td><td>35</td></tr><tr><td>2</td><td><code>chainmail</code></td><td>Chainmail</td><td>8</td><td>3</td><td>45</td></tr><tr><td>2</td><td><code>brigandine</code></td><td>Brigandine</td><td>11</td><td>5</td><td>75</td></tr><tr><td>2</td><td><code>ranger_hood</code></td><td>Ranger Hood</td><td>9</td><td>18</td><td>90</td></tr><tr><td>2</td><td><code>knight_mail</code></td><td>Knight Mail</td><td>13</td><td>4</td><td>110</td></tr><tr><td>2</td><td><code>plate_armor</code></td><td>Plate Armor</td><td>14</td><td>2</td><td>100</td></tr><tr><td>3</td><td><code>shadow_cloak</code></td><td>Shadow Cloak</td><td>10</td><td>20</td><td>80</td></tr><tr><td>3</td><td><code>mossweave_robes</code></td><td>Mossweave Robes</td><td>12</td><td>14</td><td>140</td></tr><tr><td>3</td><td><code>barkscale_mail</code></td><td>Barkscale Mail</td><td>16</td><td>8</td><td>190</td></tr><tr><td>4</td><td><code>reedscale_vest</code></td><td>Reedscale Vest</td><td>18</td><td>11</td><td>260</td></tr><tr><td>4</td><td><code>marshguard_plate</code></td><td>Marshguard Plate</td><td>22</td><td>6</td><td>360</td></tr><tr><td>4</td><td><code>mistwalker_cloak</code></td><td>Mistwalker Cloak</td><td>17</td><td>24</td><td>420</td></tr><tr><td>4</td><td><code>dark_plate</code></td><td>Dark Plate</td><td>20</td><td>5</td><td>250</td></tr><tr><td>5</td><td><code>basalt_plate</code></td><td>Basalt Plate</td><td>26</td><td>3</td><td>620</td></tr><tr><td>5</td><td><code>ashen_cloak</code></td><td>Ashen Cloak</td><td>21</td><td>22</td><td>700</td></tr><tr><td>5</td><td><code>wyrmguard_plate</code></td><td>Wyrmguard Plate</td><td>30</td><td>8</td><td>950</td></tr></tbody></table></div></article></div>
+  </section>
 
-    function fillAscii() {
-      var lineHeight = 10;
-      var lines = Math.ceil(window.innerHeight / lineHeight) + 2;
-      var leftLines = [];
-      var rightLines = [];
+  <section class="section" id="characters">
+    <div class="section-title"><h2>Creation de personnage</h2><span>races, genres, classes, bonus</span></div>
+    <div class="grid one"><article class="card"><h3>Races</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Description</th><th>Bonuses</th></tr></thead><tbody><tr><td><code>human</code></td><td>Human</td><td>Balanced and adaptable.</td><td><span class="tag">max_hp 5</span> <span class="tag">max_mana 5</span> <span class="tag">base_attack 1</span> <span class="tag">magic_power 0</span> <span class="tag">base_armor 0</span></td></tr><tr><td><code>elf</code></td><td>Elf</td><td>Gifted with mana and old forest senses.</td><td><span class="tag">max_hp -5</span> <span class="tag">max_mana 20</span> <span class="tag">base_attack 0</span> <span class="tag">magic_power 6</span> <span class="tag">base_armor 0</span></td></tr><tr><td><code>lizardfolk</code></td><td>Lizardfolk</td><td>Scaled, resilient, and born for dangerous wilds.</td><td><span class="tag">max_hp 15</span> <span class="tag">max_mana 0</span> <span class="tag">base_attack 2</span> <span class="tag">magic_power 0</span> <span class="tag">base_armor 2</span></td></tr></tbody></table></div></article><article class="card"><h3>Genders</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th></tr></thead><tbody><tr><td><code>male</code></td><td>Male</td></tr><tr><td><code>female</code></td><td>Female</td></tr></tbody></table></div></article><article class="card"><h3>Classes</h3><div class="table-scroll"><table><thead><tr><th>Key</th><th>Name</th><th>Description</th><th>Bonuses</th><th>Starting items</th></tr></thead><tbody><tr><td><code>warrior</code></td><td>Warrior</td><td>Stronger in melee, tougher at the start.</td><td><span class="tag">max_hp 15</span> <span class="tag">max_mana -10</span> <span class="tag">base_attack 4</span> <span class="tag">magic_power -2</span> <span class="tag">base_armor 1</span></td><td>{&#x27;weapons&#x27;: [&#x27;iron_sword&#x27;], &#x27;consumables&#x27;: [&#x27;small_potion&#x27;]}</td></tr><tr><td><code>mage</code></td><td>Mage</td><td>More mana and spell power, weaker in melee.</td><td><span class="tag">max_hp -10</span> <span class="tag">max_mana 35</span> <span class="tag">base_attack -1</span> <span class="tag">magic_power 8</span> <span class="tag">base_armor 0</span></td><td>{&#x27;spells&#x27;: [&#x27;fireball&#x27;], &#x27;consumables&#x27;: [&#x27;small_potion&#x27;]}</td></tr></tbody></table></div></article><article class="card"><h3>Default character</h3><p>{&#x27;race&#x27;: &#x27;human&#x27;, &#x27;gender&#x27;: &#x27;male&#x27;, &#x27;class&#x27;: &#x27;warrior&#x27;}</p></article></div>
+  </section>
 
-      for (var i = 0; i < lines; i++) {
-        leftLines.push(randomLine());
-        rightLines.push(randomLine());
-      }
+  <section class="section" id="commands">
+    <div class="section-title"><h2>Commandes</h2><span>terminal gameplay</span></div>
+    <div class="table-scroll"><table><thead><tr><th>Command</th><th>Use</th></tr></thead><tbody><tr><td><code>help</code></td><td>Show commands.</td></tr><tr><td><code>map</code></td><td>Display map.</td></tr><tr><td><code>walkable / paths</code></td><td>Toggle reachable-cell overlay.</td></tr><tr><td><code>zoom island|continent|region</code></td><td>Change the map view.</td></tr><tr><td><code>cd {cell}</code></td><td>Travel to a map cell.</td></tr><tr><td><code>cd {region}</code></td><td>Travel to a region if the pass is unlocked.</td></tr><tr><td><code>cd {location}</code></td><td>Enter a location.</td></tr><tr><td><code>cd {subloc}</code></td><td>Enter a sub-location.</td></tr><tr><td><code>cd ..</code></td><td>Go back.</td></tr><tr><td><code>sail</code></td><td>Travel by boat from an authorized port.</td></tr><tr><td><code>look</code></td><td>Describe the current place.</td></tr><tr><td><code>talk</code></td><td>Talk to someone here.</td></tr><tr><td><code>journal / quests</code></td><td>Show quest progress.</td></tr><tr><td><code>stats</code></td><td>Show player stats.</td></tr><tr><td><code>inventory / inv</code></td><td>Show inventory.</td></tr><tr><td><code>equip {item}</code></td><td>Equip weapon or armor.</td></tr><tr><td><code>unequip weapon|armor</code></td><td>Unequip gear.</td></tr><tr><td><code>use {item}</code></td><td>Use consumable.</td></tr><tr><td><code>buy {item}</code></td><td>Buy from shop NPCs.</td></tr><tr><td><code>sell {item}</code></td><td>Sell at a merchant.</td></tr><tr><td><code>cast {spell}</code></td><td>Cast a spell during combat.</td></tr><tr><td><code>fight</code></td><td>Start combat in hostile places.</td></tr><tr><td><code>search</code></td><td>Search special places for loot.</td></tr><tr><td><code>sleep</code></td><td>Rest in a tavern.</td></tr><tr><td><code>train</code></td><td>Increase spell slots at a mage.</td></tr><tr><td><code>cheat</code></td><td>Testing command that unlocks content.</td></tr><tr><td><code>quit / exit</code></td><td>Quit game.</td></tr></tbody></table></div>
+  </section>
 
-      left.textContent = leftLines.join("\n");
-      right.textContent = rightLines.join("\n");
-    }
-
-    fillAscii();
-    window.addEventListener("resize", fillAscii);
-    window.setInterval(fillAscii, 900);
-  })();
-</script>
+  <p class="footer"><a href="#top">Retour en haut</a> | <a href="index.html">Accueil</a></p>
+</div>
 </body>
 </html>

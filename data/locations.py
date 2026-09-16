@@ -14,6 +14,7 @@
 TILE_SYMBOLS = {
     "plains":      ".",
     "forest":      "T",
+    "slime_lair":  "S",
     "village":     "V",
     "cave":        "O",
     "castle":      "#",
@@ -27,6 +28,7 @@ TILE_SYMBOLS = {
 TILE_NAMES = {
     "plains":      "Plains",
     "forest":      "Forest",
+    "slime_lair":  "Slime Hollow",
     "village":     "Village",
     "cave":        "Cave",
     "castle":      "Castle",
@@ -42,11 +44,12 @@ TILE_NAMES = {
 # ---------------------------------------------------------------------------
 
 SUBLOCS = {
-    "village":     ["merchant", "blacksmith", "tavern", "chapel", "square"],
+    "village":     ["town_hall", "merchant", "blacksmith", "tavern", "chapel", "square"],
     "cave":        ["entrance", "corridor", "crypt", "altar", "treasure_room"],
     "dungeon":     ["entrance", "corridor", "crypt", "altar", "treasure_room"],
     "castle":      ["courtyard", "great_hall", "tower", "dungeon_cells", "throne_room", "treasure_room"],
     "forest":      ["clearing", "ruins", "stream"],
+    "slime_lair":  ["entrance", "slime_pool"],
     "capital":     ["courtyard", "great_hall", "throne_room", "barracks", "merchant", "tavern"],
     "dragon_lair": ["entrance", "tunnel", "hoard", "nest"],
     "port":        ["dock", "tavern", "merchant"],
@@ -69,6 +72,11 @@ DESC_FOREST = [
     "A dense, lightless wood. Twisted roots break through the soil like veins. Strange fungus glows faintly on the bark. Something moves in the canopy above.",
     "The forest is silent and suffocating. Moss-covered stones form unnatural patterns among the trees. An old path, nearly consumed by undergrowth, leads deeper into the darkness.",
     "Black pines rise like cathedral pillars into the mist. The ground is carpeted with dead needles. A cold wind carries whispers you cannot quite understand.",
+]
+
+DESC_SLIME_LAIR = [
+    "A bright marshy hollow glistens with strange green puddles. The grass squelches underfoot, and little bubbles rise from the mud.",
+    "The hollow is quiet except for soft wet plops from the slime pools. Something large has pressed a path through the reeds.",
 ]
 
 DESC_VILLAGE = [
@@ -113,6 +121,7 @@ DESC_PORT = [
 DESC_MAP = {
     "plains":      DESC_PLAINS,
     "forest":      DESC_FOREST,
+    "slime_lair":  DESC_SLIME_LAIR,
     "village":     DESC_VILLAGE,
     "cave":        DESC_CAVE,
     "castle":      DESC_CASTLE,
@@ -130,6 +139,9 @@ DESC_SUBLOCS = {
     "merchant": [
         "A cramped shop crammed with dusty wares. The merchant watches you from behind a counter stacked with oddities. Candles gutter in the draught.",
         "Shelves of potions, blades, and curiosities line the walls. The merchant nods slowly, their face half-hidden in shadow.",
+    ],
+    "town_hall": [
+        "A modest town hall built from pale timber. Maps of Mosswake Isle hang on the walls, and the mayor's desk is buried under worried letters.",
     ],
     "blacksmith": [
         "The forge glows red in the gloom. The blacksmith, a massive figure scarred by years of fire, hammers at a blade without looking up.",
@@ -195,6 +207,9 @@ DESC_SUBLOCS = {
     ],
     "stream": [
         "A dark stream winds through the trees. The water is cold and clear but tastes faintly of iron. Moss-covered stones line its banks.",
+    ],
+    "slime_pool": [
+        "Thick green slime gathers in a shallow pool. It trembles with every step you take. This is where the Slime King was last seen.",
     ],
     "barracks": [
         "Rows of bunks line the walls of the barracks. Soldiers sharpen blades and mend armour in grim silence. The smell of iron and sweat hangs heavy in the air.",

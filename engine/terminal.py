@@ -1,6 +1,7 @@
 """Terminal helpers: ANSI colors, styled text, console font setup."""
 
 import os
+import re
 import sys
 
 try:
@@ -32,6 +33,7 @@ class C:
 TILE_COLORS = {
     "plains":      C.DIM,
     "forest":      C.GREEN,
+    "slime_lair":  C.BOLD + C.GREEN,
     "village":     C.YELLOW,
     "cave":        C.GREY,
     "castle":      C.MAGENTA,
@@ -52,6 +54,14 @@ BG_COLORS = {
 
 def styled(text: str, *codes: str) -> str:
     return "".join(codes) + text + C.RESET
+
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI color codes for graphical UI rendering."""
+    return ANSI_RE.sub("", text)
 
 
 def set_gothic_font():

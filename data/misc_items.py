@@ -11,6 +11,10 @@
 
 MISC_ITEMS = {
     "old_key":        {"name": "Old Key",        "value": 20},
+    "harbor_pass":    {"name": "Harbor Pass",    "value": 0},
+    "greenmarch_pass": {"name": "Greenmarch Pass", "value": 0},
+    "scalefen_pass": {"name": "Scalefen Pass", "value": 0},
+    "ashenreach_pass": {"name": "Ashenreach Pass", "value": 0},
     "skull_amulet":   {"name": "Skull Amulet",   "value": 30},
     "raven_feather":  {"name": "Raven Feather",  "value": 10},
     "golden_chalice": {"name": "Golden Chalice", "value": 75},
